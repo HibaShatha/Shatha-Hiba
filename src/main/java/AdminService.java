@@ -1,4 +1,3 @@
-
 import java.util.Scanner;
 
 public class AdminService {
@@ -28,6 +27,10 @@ public class AdminService {
 
     public boolean isLoggedIn() {
         return loggedInAdmin != null;
+    }
+
+    public String getLoggedInUsername() {
+        return loggedInAdmin != null ? loggedInAdmin.getUsername() : null;
     }
 
     public void createAccount(String username, String password) {
