@@ -27,17 +27,16 @@ public class BookService {
         return bookRepo.getAllBooks();
     }
 
-    public void borrowBook(String isbn) {
-        if (!adminService.isLoggedIn()) {
-            System.out.println("Please login as admin first!");
-            return;
-        }
-        String username = adminService.getLoggedInUsername();
+
+
+ // User borrow
+    public void borrowBook(String isbn, String username) {
         double fineBalance = fineRepo.getFineBalance(username);
         if (fineBalance > 0) {
             System.out.println("Cannot borrow: You have an outstanding fine of $" + fineBalance + ". Please pay all fines first.");
             return;
         }
+
         List<Book> books = bookRepo.getAllBooks();
         for (Book book : books) {
             if (book.getIsbn().equals(isbn)) {
@@ -45,7 +44,7 @@ public class BookService {
                     System.out.println("Book is already borrowed by " + book.getBorrowerUsername() + "! Due date: " + book.getDueDate());
                     return;
                 }
-                book.borrow(username);
+                book.borrow(username); // sets dueDate = today + 28 days
                 if (bookRepo.updateBook(book)) {
                     System.out.println("Book borrowed successfully by " + username + "! Due date: " + book.getDueDate());
                 } else {
@@ -57,20 +56,21 @@ public class BookService {
         System.out.println("Book with ISBN " + isbn + " not found!");
     }
 
-    public void returnBook(String isbn) {
+
+    // User return
+    public void returnBook(String isbn, String username) {
         List<Book> books = bookRepo.getAllBooks();
         for (Book book : books) {
             if (book.getIsbn().equals(isbn)) {
-                if (!book.isBorrowed()) {
-                    System.out.println("Book is not currently borrowed!");
+                if (!book.isBorrowed() || !username.equals(book.getBorrowerUsername())) {
+                    System.out.println("You haven't borrowed this book or it's not borrowed!");
                     return;
                 }
                 double fine = book.calculateFine();
                 if (fine > 0) {
-                    String username = book.getBorrowerUsername();
                     double currentBalance = fineRepo.getFineBalance(username);
                     fineRepo.updateFineBalance(username, currentBalance + fine);
-                    System.out.println("Overdue fine of $" + fine + " added for " + username);
+                    System.out.println("Overdue fine of $" + fine + " added to your account.");
                 }
                 book.returned();
                 if (bookRepo.updateBook(book)) {
@@ -83,6 +83,7 @@ public class BookService {
         }
         System.out.println("Book with ISBN " + isbn + " not found!");
     }
+
 
     public List<Book> getOverdueBooks() {
         return bookRepo.getAllBooks().stream()
