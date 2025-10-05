@@ -32,25 +32,31 @@ public class BookRepository {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",", -1); // Use -1 to handle empty fields
-                if (parts.length < 4) { // Ensure basic fields (title, author, isbn, borrowed)
+                String[] parts = line.split(",", -1); // -1 للحفاظ على الحقول الفارغة
+                if (parts.length < 4) { // تأكد من وجود الحقول الأساسية
                     System.out.println("Invalid line in books.csv: " + line);
                     continue;
                 }
+
+                // إنشاء الكتاب
                 Book book = new Book(parts[0], parts[1], parts[2]);
-                book.borrowed = Boolean.parseBoolean(parts[3]);
-                if (parts.length > 4 && !parts[4].isEmpty()) { // Check for dueDate
+                book.borrowed = Boolean.parseBoolean(parts[3]); // طبق حالة المستعير
+
+                // ضبط dueDate إذا موجود
+                if (parts.length > 4 && !parts[4].isEmpty()) {
                     try {
                         book.setDueDate(LocalDate.parse(parts[4]));
-                        book.borrowed = true; // Ensure borrowed is true if dueDate exists
                     } catch (Exception e) {
                         System.out.println("Error parsing due date in line: " + line);
                         book.setDueDate(null);
                     }
                 }
-                if (parts.length > 5 && !parts[5].isEmpty()) { // Check for borrowerUsername
-                    book.borrow(parts[5]); // Set borrowerUsername and ensure borrowed is true
+
+                // ضبط borrowerUsername إذا موجود
+                if (parts.length > 5 && !parts[5].isEmpty()) {
+                    book.borrowerUsername = parts[5];
                 }
+
                 books.add(book);
             }
         } catch (IOException e) {
@@ -58,6 +64,7 @@ public class BookRepository {
         }
         return books;
     }
+
 
     // Search books by title, author, or ISBN
     public List<Book> search(String keyword) {
