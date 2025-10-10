@@ -1,3 +1,8 @@
+package backend.service;
+
+import backend.model.User;
+import backend.repository.UserRepository;
+
 public class UserService {
     private UserRepository repo = new UserRepository();
     private User loggedInUser = null;
@@ -27,13 +32,22 @@ public class UserService {
         return loggedInUser != null ? loggedInUser.getUsername() : null;
     }
 
-    public void createAccount(String username, String password) {
+    public String getLoggedInUserEmail() {
+        return loggedInUser != null ? loggedInUser.getEmail() : null;
+    }
+
+    public void createAccount(String username, String password, String email) {
         if (repo.findByUsername(username) != null) {
             System.out.println("Username already exists!");
             return;
         }
-        repo.addUser(new User(username, password));
+        repo.addUser(new User(username, password, email));
         System.out.println("User account created successfully!");
+    }
+
+    public String getEmailByUsername(String username) {
+        User user = repo.findByUsername(username);
+        return user != null ? user.getEmail() : null;
     }
 
     public void resetPassword(String username, String newPassword) {
@@ -42,5 +56,9 @@ public class UserService {
         } else {
             System.out.println("Username not found!");
         }
+    }
+
+    public User findByUsername(String username) {
+        return repo.findByUsername(username);
     }
 }

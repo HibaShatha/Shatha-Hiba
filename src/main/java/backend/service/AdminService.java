@@ -1,4 +1,8 @@
+package backend.service;
 import java.util.Scanner;
+
+import backend.model.Admin;
+import backend.repository.AdminRepository;
 
 public class AdminService {
     private AdminRepository repo = new AdminRepository();

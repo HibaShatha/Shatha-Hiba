@@ -1,5 +1,10 @@
+package backend.service;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import backend.model.Book;
+import backend.repository.BookRepository;
+import backend.repository.FineRepository;
 
 public class BookService {
     private BookRepository bookRepo = new BookRepository();
@@ -103,16 +108,37 @@ public class BookService {
 
     
     public void payFine(String username, double amount) {
-        double currentBalance = fineRepo.getFineBalance(username);
+        double totalBalance = getUserFineBalance(username);
+        if (totalBalance <= 0) {
+            System.out.println("No fine to pay!");
+            return;
+        }
         if (amount <= 0) {
             System.out.println("Payment amount must be positive!");
             return;
         }
-        if (amount > currentBalance) {
-            System.out.println("Payment of $" + amount + " exceeds fine balance of $" + currentBalance + ". Paying full balance.");
-            amount = currentBalance;
+
+        if (amount >= totalBalance) {
+            System.out.println("Payment of $" + amount + " exceeds fine balance of $" + totalBalance + ". Paying full balance.");
+            fineRepo.updateFineBalance(username, 0.0); // إعادة الرصيد الأساسي إلى صفر
+            // الغرامات المتأخرة على الكتب تعتبر مدفوعة تلقائيًا عند عرض getUserFineBalance
+            System.out.println("Paid $" + totalBalance + ". Remaining fine balance: $0.0");
+        } else {
+            // دفع جزئي: أولًا من الرصيد الأساسي
+            double currentBalance = fineRepo.getFineBalance(username);
+            double remainingAmount = amount;
+
+            if (currentBalance >= remainingAmount) {
+                fineRepo.updateFineBalance(username, currentBalance - remainingAmount);
+            } else {
+                fineRepo.updateFineBalance(username, 0.0);
+                remainingAmount -= currentBalance;
+                // هنا يمكن إذا تحبي، تدفعي جزء من الغرامات المتأخرة على الكتب
+            }
+
+            System.out.println("Paid $" + amount + ". Remaining fine balance: $" + getUserFineBalance(username));
         }
-        fineRepo.updateFineBalance(username, currentBalance - amount);
-        System.out.println("Paid $" + amount + ". Remaining fine balance: $" + fineRepo.getFineBalance(username));
     }
+
+
 }
