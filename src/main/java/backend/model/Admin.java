@@ -1,3 +1,4 @@
+package backend.model;
 
 public class Admin {
  public String username;

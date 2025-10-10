@@ -1,33 +1,33 @@
+package backend.repository;
 
 import java.io.*;
-import java.util.*;
+import backend.model.User;
 
-public class AdminRepository {
-    private final String FILE_PATH = "admins.csv";
+public class UserRepository {
+    private final String FILE_PATH = "users.csv";
 
-    public AdminRepository() {
-        // إذا الملف مش موجود نعمله
+    public UserRepository() {
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
         }
     }
 
-    public void addAdmin(Admin admin) {
-        try (FileWriter fw = new FileWriter(FILE_PATH, true);
-             BufferedWriter bw = new BufferedWriter(fw)) {
-            bw.write(admin.getUsername() + "," + admin.getPassword());
+    public void addUser(User user) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+            bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getEmail());
             bw.newLine();
         } catch (IOException e) { e.printStackTrace(); }
     }
 
-    public Admin findByUsername(String username) {
+    public User findByUsername(String username) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
                 if (parts[0].equals(username)) {
-                    return new Admin(parts[0], parts[1]);
+                    String email = parts.length > 2 ? parts[2] : "";
+                    return new User(parts[0], parts[1], email);
                 }
             }
         } catch (IOException e) { e.printStackTrace(); }
@@ -37,7 +37,7 @@ public class AdminRepository {
     public boolean updatePassword(String username, String newPassword) {
         try {
             File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp.csv");
+            File tempFile = new File("temp_users.csv");
 
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
@@ -47,8 +47,9 @@ public class AdminRepository {
 
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",");
+                String email = parts.length > 2 ? parts[2] : "";
                 if (parts[0].equals(username)) {
-                    writer.write(username + "," + newPassword);
+                    writer.write(username + "," + newPassword + "," + email);
                     found = true;
                 } else {
                     writer.write(line);
@@ -65,9 +66,6 @@ public class AdminRepository {
             }
 
             return found;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (IOException e) { e.printStackTrace(); return false; }
     }
 }
