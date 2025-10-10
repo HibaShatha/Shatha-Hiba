@@ -32,13 +32,19 @@ public class BookService {
         return bookRepo.getAllBooks();
     }
 
-
-
- // User borrow
     public void borrowBook(String isbn, String username) {
+        // Check for unpaid fines
         double fineBalance = fineRepo.getFineBalance(username);
         if (fineBalance > 0) {
             System.out.println("Cannot borrow: You have an outstanding fine of $" + fineBalance + ". Please pay all fines first.");
+            return;
+        }
+
+        // Check for overdue books
+        boolean hasOverdueBooks = getOverdueBooks().stream()
+                                                   .anyMatch(b -> b.getBorrowerUsername() != null && b.getBorrowerUsername().equals(username));
+        if (hasOverdueBooks) {
+            System.out.println("Cannot borrow: You have overdue books. Please return all overdue books first.");
             return;
         }
 
@@ -61,8 +67,6 @@ public class BookService {
         System.out.println("Book with ISBN " + isbn + " not found!");
     }
 
-
-    // User return
     public void returnBook(String isbn, String username) {
         List<Book> books = bookRepo.getAllBooks();
         for (Book book : books) {
@@ -89,14 +93,12 @@ public class BookService {
         System.out.println("Book with ISBN " + isbn + " not found!");
     }
 
-
     public List<Book> getOverdueBooks() {
         return bookRepo.getAllBooks().stream()
                       .filter(Book::isOverdue)
                       .collect(Collectors.toList());
     }
 
-   
     public double getUserFineBalance(String username) {
         double balance = fineRepo.getFineBalance(username);
         double pendingFines = getOverdueBooks().stream()
@@ -106,7 +108,6 @@ public class BookService {
         return balance + pendingFines;
     }
 
-    
     public void payFine(String username, double amount) {
         double totalBalance = getUserFineBalance(username);
         if (totalBalance <= 0) {
@@ -120,11 +121,9 @@ public class BookService {
 
         if (amount >= totalBalance) {
             System.out.println("Payment of $" + amount + " exceeds fine balance of $" + totalBalance + ". Paying full balance.");
-            fineRepo.updateFineBalance(username, 0.0); // إعادة الرصيد الأساسي إلى صفر
-            // الغرامات المتأخرة على الكتب تعتبر مدفوعة تلقائيًا عند عرض getUserFineBalance
+            fineRepo.updateFineBalance(username, 0.0);
             System.out.println("Paid $" + totalBalance + ". Remaining fine balance: $0.0");
         } else {
-            // دفع جزئي: أولًا من الرصيد الأساسي
             double currentBalance = fineRepo.getFineBalance(username);
             double remainingAmount = amount;
 
@@ -133,12 +132,9 @@ public class BookService {
             } else {
                 fineRepo.updateFineBalance(username, 0.0);
                 remainingAmount -= currentBalance;
-                // هنا يمكن إذا تحبي، تدفعي جزء من الغرامات المتأخرة على الكتب
             }
 
             System.out.println("Paid $" + amount + ". Remaining fine balance: $" + getUserFineBalance(username));
         }
     }
-
-
 }

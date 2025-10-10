@@ -68,4 +68,40 @@ public class UserRepository {
             return found;
         } catch (IOException e) { e.printStackTrace(); return false; }
     }
+
+    public boolean removeUser(String username) {
+        try {
+            File inputFile = new File(FILE_PATH);
+            File tempFile = new File("temp_users.csv");
+
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+
+            String line;
+            boolean found = false;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (!parts[0].equals(username)) {
+                    writer.write(line);
+                    writer.newLine();
+                } else {
+                    found = true;
+                }
+            }
+
+            reader.close();
+            writer.close();
+
+            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                System.out.println("Error deleting user from file");
+                return false;
+            }
+
+            return found;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

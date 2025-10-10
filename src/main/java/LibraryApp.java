@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.Scanner;
 
 import backend.model.Book;
+import backend.repository.UserRepository;
 import backend.service.AdminService;
 import backend.service.BookService;
 import backend.service.EmailService;
@@ -146,7 +147,8 @@ public class LibraryApp {
             System.out.println("3- Show All Books");
             System.out.println("4- Show Overdue Books");
             System.out.println("5- Send Reminder Emails");
-            System.out.println("6- Logout");
+            System.out.println("6- Unregister User");
+            System.out.println("7- Logout");
             System.out.print("Choose an option: ");
             int option = scanner.nextInt();
             scanner.nextLine();
@@ -178,6 +180,11 @@ public class LibraryApp {
                     reminderService.sendReminders();
                     break;
                 case 6:
+                    System.out.print("Enter username to unregister: ");
+                    String username = scanner.nextLine();
+                    adminService.unregisterUser(username, new UserRepository(), bookService);
+                    break;
+                case 7:
                     adminService.logout();
                     break;
                 default:
