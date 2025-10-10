@@ -99,10 +99,8 @@ public class LibraryApp {
 
             if (accountType == 1) {
                 adminService.createAccount(username, password);
-                System.out.println("Admin account created successfully!");
             } else if (accountType == 2) {
                 userService.createAccount(username, password, email);
-                System.out.println("User account created successfully!");
             } else {
                 System.out.println("Invalid option! Try again.");
             }
