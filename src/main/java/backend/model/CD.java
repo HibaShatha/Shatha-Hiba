@@ -2,19 +2,19 @@ package backend.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import backend.model.fine.BookFineStrategy;
+import backend.model.fine.CDFineStrategy;
 
-public class Book extends Media {
+public class CD extends Media {
 
-    public Book(String title, String author, String isbn) {
-        super(title, author, isbn, new BookFineStrategy());
+    public CD(String title, String author) { 
+        super(title, author, null, new CDFineStrategy()); 
     }
 
     @Override
     public void borrow(String username) {
         this.borrowed = true;
         this.borrowerUsername = username;
-        this.dueDate = LocalDate.now().plusDays(28);
+        this.dueDate = LocalDate.now().plusDays(7); // ✅ 7 أيام فقط
     }
 
     @Override
