@@ -11,11 +11,11 @@ import backend.model.Book;
 import backend.model.User;
 
 public class ReminderService {
-    private BookService bookService;
+    private MediaService bookService;
     private UserService userService;
     private final String LOG_FILE = "mock_emails.txt";
 
-    public ReminderService(BookService bookService, UserService userService) {
+    public ReminderService(MediaService bookService, UserService userService) {
         this.bookService = bookService;
         this.userService = userService;
     }

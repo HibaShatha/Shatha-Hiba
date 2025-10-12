@@ -2,7 +2,7 @@ package backend.service;
 import backend.model.Admin;
 import backend.repository.AdminRepository;
 import backend.repository.UserRepository;
-import backend.service.BookService;
+import backend.service.MediaService;
 
 public class AdminService {
     private AdminRepository repo = new AdminRepository();
@@ -54,7 +54,7 @@ public class AdminService {
         }
     }
 
-    public void unregisterUser(String username, UserRepository userRepo, BookService bookService) {
+    public void unregisterUser(String username, UserRepository userRepo, MediaService bookService) {
         if (!isLoggedIn()) {
             System.out.println("Please login as admin first!");
             return;

@@ -1,9 +1,9 @@
 package backend.repository;
+
 import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import backend.model.Book;
 
 public class BookRepository {
@@ -16,7 +16,6 @@ public class BookRepository {
         }
     }
 
-    // Add a new book to the CSV file
     public void addBook(Book book) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
             String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
@@ -24,52 +23,34 @@ public class BookRepository {
             bw.write(book.getTitle() + "," + book.getAuthor() + "," + book.getIsbn() + "," +
                      book.isBorrowed() + "," + dueDateStr + "," + borrowerUsername);
             bw.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
-    // Retrieve all books from the CSV file
     public List<Book> getAllBooks() {
         List<Book> books = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",", -1); // -1 للحفاظ على الحقول الفارغة
-                if (parts.length < 4) { // تأكد من وجود الحقول الأساسية
-                    System.out.println("Invalid line in books.csv: " + line);
-                    continue;
-                }
+                String[] parts = line.split(",", -1);
+                if (parts.length < 4) continue;
 
-                // إنشاء الكتاب
                 Book book = new Book(parts[0], parts[1], parts[2]);
-                book.borrowed = Boolean.parseBoolean(parts[3]); // طبق حالة المستعير
+                book.borrowed = Boolean.parseBoolean(parts[3]);
 
-                // ضبط dueDate إذا موجود
                 if (parts.length > 4 && !parts[4].isEmpty()) {
-                    try {
-                        book.setDueDate(LocalDate.parse(parts[4]));
-                    } catch (Exception e) {
-                        System.out.println("Error parsing due date in line: " + line);
-                        book.setDueDate(null);
-                    }
+                    try { book.setDueDate(LocalDate.parse(parts[4])); } catch (Exception e) { book.setDueDate(null); }
                 }
 
-                // ضبط borrowerUsername إذا موجود
                 if (parts.length > 5 && !parts[5].isEmpty()) {
                     book.borrowerUsername = parts[5];
                 }
 
                 books.add(book);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) { e.printStackTrace(); }
         return books;
     }
 
-
-    // Search books by title, author, or ISBN
     public List<Book> search(String keyword) {
         List<Book> results = new ArrayList<>();
         for (Book book : getAllBooks()) {
@@ -82,7 +63,6 @@ public class BookRepository {
         return results;
     }
 
-    // Update a book's record in the CSV file
     public boolean updateBook(Book book) {
         try {
             File inputFile = new File(FILE_PATH);
@@ -117,9 +97,6 @@ public class BookRepository {
             }
 
             return found;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (IOException e) { e.printStackTrace(); return false; }
     }
 }
