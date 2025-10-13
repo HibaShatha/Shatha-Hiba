@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 public class EmailService {
-    private final String EMAIL_FILE = "emails.txt";
+    private final String EMAIL_FILE = "emails.csv";
 
     public List<String> getMessagesForEmail(String email) {
         List<String> messages = new ArrayList<>();
