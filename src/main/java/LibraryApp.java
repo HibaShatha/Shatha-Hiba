@@ -48,7 +48,6 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- Login Menu ----------------
     private static void loginMenu(Scanner scanner, AdminService adminService, UserService userService, MediaService mediaService) {
         while (true) {
             System.out.println("\n=== Login Menu ===");
@@ -88,7 +87,6 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- Create Account ----------------
     private static void createAccountMenu(Scanner scanner, AdminService adminService, UserService userService) {
         while (true) {
             System.out.println("\n=== Create Account Menu ===");
@@ -106,9 +104,12 @@ public class LibraryApp {
             System.out.print("New Password: ");
             String password = scanner.nextLine();
             String email = "";
+            String phoneNumber = "";
             if (accountType == 2) {
                 System.out.print("Email: ");
                 email = scanner.nextLine();
+                System.out.print("Phone Number: ");
+                phoneNumber = scanner.nextLine();
             }
 
             switch (accountType) {
@@ -117,7 +118,7 @@ public class LibraryApp {
                     System.out.println("Admin account created!");
                     break;
                 case 2:
-                    userService.createAccount(username, password, email);
+                    userService.createAccount(username, password, email, phoneNumber);
                     System.out.println("User account created!");
                     break;
                 default:
@@ -127,7 +128,6 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- Forgot Password ----------------
     private static void forgotPasswordMenu(Scanner scanner, AdminService adminService, UserService userService) {
         while (true) {
             System.out.println("\n=== Forgot Password Menu ===");
@@ -161,9 +161,8 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- Admin Menu ----------------
     private static void adminMenu(Scanner scanner, AdminService adminService, MediaService mediaService, UserService userService) {
-        ReminderService reminderService = new ReminderService(null, userService);
+        ReminderService reminderService = new ReminderService(mediaService, userService);
 
         while (adminService.isLoggedIn()) {
             System.out.println("\n=== Admin Menu ===");
@@ -173,7 +172,7 @@ public class LibraryApp {
             System.out.println("4- Show All Books");
             System.out.println("5- Show All CDs");
             System.out.println("6- Show Overdue Books/CDs");
-            System.out.println("7- Send Reminder Emails");
+            System.out.println("7- Send Reminder");
             System.out.println("8- Unregister User");
             System.out.println("9- Logout");
             System.out.print("Choose an option: ");
@@ -230,7 +229,7 @@ public class LibraryApp {
                 case 8:
                     System.out.print("Enter username to unregister: ");
                     String username = scanner.nextLine();
-                    adminService.unregisterUser(username, new UserRepository(), null);
+                    adminService.unregisterUser(username, new UserRepository(), mediaService);
                     break;
                 case 9:
                     adminService.logout();
@@ -242,7 +241,6 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- User Menu ----------------
     private static void userMenu(Scanner scanner, UserService userService, MediaService mediaService) {
         EmailService emailService = new EmailService();
         String username = userService.getLoggedInUsername();
@@ -331,7 +329,6 @@ public class LibraryApp {
         }
     }
 
-    // ---------------- Helper ----------------
     private static String formatMediaInfo(Media m) {
         return m.getTitle() + " (" + m.getMediaType() + ")" +
                " | Borrowed: " + (m.isBorrowed() ? 

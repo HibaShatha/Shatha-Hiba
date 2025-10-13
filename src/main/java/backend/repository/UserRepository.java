@@ -15,7 +15,7 @@ public class UserRepository {
 
     public void addUser(User user) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
-            bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getEmail());
+            bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getEmail() + "," + user.getPhoneNumber());
             bw.newLine();
         } catch (IOException e) { e.printStackTrace(); }
     }
@@ -24,10 +24,11 @@ public class UserRepository {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts[0].equals(username)) {
+                String[] parts = line.split(",", -1);
+                if (parts.length >= 4 && parts[0].equals(username)) {
                     String email = parts.length > 2 ? parts[2] : "";
-                    return new User(parts[0], parts[1], email);
+                    String phoneNumber = parts.length > 3 ? parts[3] : "";
+                    return new User(parts[0], parts[1], email, phoneNumber);
                 }
             }
         } catch (IOException e) { e.printStackTrace(); }
@@ -46,10 +47,11 @@ public class UserRepository {
             boolean found = false;
 
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(",", -1);
                 String email = parts.length > 2 ? parts[2] : "";
+                String phoneNumber = parts.length > 3 ? parts[3] : "";
                 if (parts[0].equals(username)) {
-                    writer.write(username + "," + newPassword + "," + email);
+                    writer.write(username + "," + newPassword + "," + email + "," + phoneNumber);
                     found = true;
                 } else {
                     writer.write(line);
@@ -99,9 +101,6 @@ public class UserRepository {
             }
 
             return found;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (IOException e) { e.printStackTrace(); return false; }
     }
 }

@@ -36,12 +36,12 @@ public class UserService {
         return loggedInUser != null ? loggedInUser.getEmail() : null;
     }
 
-    public void createAccount(String username, String password, String email) {
+    public void createAccount(String username, String password, String email, String phoneNumber) {
         if (repo.findByUsername(username) != null) {
             System.out.println("Username already exists!");
             return;
         }
-        repo.addUser(new User(username, password, email));
+        repo.addUser(new User(username, password, email, phoneNumber));
         System.out.println("User account created successfully!");
     }
 
