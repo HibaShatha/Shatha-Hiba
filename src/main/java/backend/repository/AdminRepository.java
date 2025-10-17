@@ -2,20 +2,27 @@ package backend.repository;
 
 import java.io.*;
 import java.util.*;
+import java.nio.file.*;
 
 import backend.model.Admin;
 
 public class AdminRepository {
-    private final String FILE_PATH = "admins.csv";
+    public final String FILE_PATH ;
+
 
     public AdminRepository() {
+        this("admins.csv"); // المسار الافتراضي
+    }
+
+    public AdminRepository(String filePath) {
+        this.FILE_PATH = filePath;
+
         // إذا الملف مش موجود نعمله
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
         }
     }
-
     public void addAdmin(Admin admin) {
         try (FileWriter fw = new FileWriter(FILE_PATH, true);
              BufferedWriter bw = new BufferedWriter(fw)) {
@@ -38,36 +45,44 @@ public class AdminRepository {
     }
 
     public boolean updatePassword(String username, String newPassword) {
+        Path inputPath = Paths.get(FILE_PATH);
+        // أنشئ ملف مؤقت في نفس مجلد الملف الأصلي
+        Path dir = inputPath.getParent();
+        if (dir == null) {
+            dir = Paths.get("."); // حالة المسار بدون مجلد
+        }
+
         try {
-            File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp.csv");
+            Path tempPath = Files.createTempFile(dir, "temp_admins", ".csv");
 
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
-            String line;
             boolean found = false;
 
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts[0].equals(username)) {
-                    writer.write(username + "," + newPassword);
-                    found = true;
-                } else {
-                    writer.write(line);
+            try (BufferedReader reader = Files.newBufferedReader(inputPath);
+                 BufferedWriter writer = Files.newBufferedWriter(tempPath)) {
+
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    String[] parts = line.split(",", 2); // امنع مشاكل لو كلمة السر فيها فاصلة
+                    if (parts.length > 0 && parts[0].equals(username)) {
+                        writer.write(username + "," + newPassword);
+                        found = true;
+                    } else {
+                        writer.write(line);
+                    }
+                    writer.newLine();
                 }
-                writer.newLine();
             }
 
-            reader.close();
-            writer.close();
-
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Error updating password file");
+            if (!found) {
+                // المستخدم مش موجود — نحذف الملف المؤقت ونترك الملف الأصلي كما هو
+                Files.deleteIfExists(tempPath);
                 return false;
             }
 
-            return found;
+            // استبدال الملف الأصلي بالمؤقت (آمن، ويستبدل لو موجود)
+            Files.move(tempPath, inputPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            return true;
+
         } catch (IOException e) {
             e.printStackTrace();
             return false;
