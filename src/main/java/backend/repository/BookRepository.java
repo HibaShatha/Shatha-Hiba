@@ -1,102 +1,111 @@
 package backend.repository;
 
-import java.io.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import backend.model.Book;
+   import java.io.*;
+   import java.time.LocalDate;
+   import java.util.ArrayList;
+   import java.util.List;
+   import backend.model.Book;
 
-public class BookRepository {
-    private final String FILE_PATH = "books.csv";
+   public class BookRepository {
+       private final String FILE_PATH;
 
-    public BookRepository() {
-        File file = new File(FILE_PATH);
-        if (!file.exists()) {
-            try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
-        }
-    }
+       public BookRepository() {
+           this("books.csv");
+       }
 
-    public void addBook(Book book) {
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
-            String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
-            String borrowerUsername = book.getBorrowerUsername() != null ? book.getBorrowerUsername() : "";
-            bw.write(book.getTitle() + "," + book.getAuthor() + "," + book.getIsbn() + "," +
-                     book.isBorrowed() + "," + dueDateStr + "," + borrowerUsername);
-            bw.newLine();
-        } catch (IOException e) { e.printStackTrace(); }
-    }
+       public BookRepository(String filePath) {
+           this.FILE_PATH = filePath;
+           File file = new File(FILE_PATH);
+           if (!file.exists()) {
+               try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
+           }
+       }
 
-    public List<Book> getAllBooks() {
-        List<Book> books = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                if (parts.length < 4) continue;
+       public String getFilePath() {
+           return FILE_PATH;
+       }
 
-                Book book = new Book(parts[0], parts[1], parts[2]);
-                book.borrowed = Boolean.parseBoolean(parts[3]);
+       public void addBook(Book book) {
+           try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
+               String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
+               String borrowerUsername = book.getBorrowerUsername() != null ? book.getBorrowerUsername() : "";
+               bw.write(book.getTitle() + "," + book.getAuthor() + "," + book.getIsbn() + "," +
+                        book.isBorrowed() + "," + dueDateStr + "," + borrowerUsername);
+               bw.newLine();
+           } catch (IOException e) { e.printStackTrace(); }
+       }
 
-                if (parts.length > 4 && !parts[4].isEmpty()) {
-                    try { book.setDueDate(LocalDate.parse(parts[4])); } catch (Exception e) { book.setDueDate(null); }
-                }
+       public List<Book> getAllBooks() {
+           List<Book> books = new ArrayList<>();
+           try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
+               String line;
+               while ((line = br.readLine()) != null) {
+                   String[] parts = line.split(",", -1);
+                   if (parts.length < 4) continue;
 
-                if (parts.length > 5 && !parts[5].isEmpty()) {
-                    book.borrowerUsername = parts[5];
-                }
+                   Book book = new Book(parts[0], parts[1], parts[2]);
+                   book.borrowed = Boolean.parseBoolean(parts[3]);
 
-                books.add(book);
-            }
-        } catch (IOException e) { e.printStackTrace(); }
-        return books;
-    }
+                   if (parts.length > 4 && !parts[4].isEmpty()) {
+                       try { book.setDueDate(LocalDate.parse(parts[4])); } catch (Exception e) { book.setDueDate(null); }
+                   }
 
-    public List<Book> search(String keyword) {
-        List<Book> results = new ArrayList<>();
-        for (Book book : getAllBooks()) {
-            if (book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
-                book.getAuthor().toLowerCase().contains(keyword.toLowerCase()) ||
-                book.getIsbn().equalsIgnoreCase(keyword)) {
-                results.add(book);
-            }
-        }
-        return results;
-    }
+                   if (parts.length > 5 && !parts[5].isEmpty()) {
+                       book.borrowerUsername = parts[5];
+                   }
 
-    public boolean updateBook(Book book) {
-        try {
-            File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp_books.csv");
+                   books.add(book);
+               }
+           } catch (IOException e) { e.printStackTrace(); }
+           return books;
+       }
 
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+       public List<Book> search(String keyword) {
+           List<Book> results = new ArrayList<>();
+           for (Book book : getAllBooks()) {
+               if (book.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                   book.getAuthor().toLowerCase().contains(keyword.toLowerCase()) ||
+                   book.getIsbn().equalsIgnoreCase(keyword)) {
+                   results.add(book);
+               }
+           }
+           return results;
+       }
 
-            String line;
-            boolean found = false;
+       public boolean updateBook(Book book) {
+           try {
+               File inputFile = new File(FILE_PATH);
+               File tempFile = new File("temp_books.csv");
 
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                if (parts.length >= 3 && parts[2].equals(book.getIsbn())) {
-                    String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
-                    String borrowerUsername = book.getBorrowerUsername() != null ? book.getBorrowerUsername() : "";
-                    writer.write(book.getTitle() + "," + book.getAuthor() + "," + book.getIsbn() + "," +
-                                 book.isBorrowed() + "," + dueDateStr + "," + borrowerUsername);
-                    found = true;
-                } else {
-                    writer.write(line);
-                }
-                writer.newLine();
-            }
+               BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+               BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
 
-            reader.close();
-            writer.close();
+               String line;
+               boolean found = false;
 
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Error updating book file");
-                return false;
-            }
+               while ((line = reader.readLine()) != null) {
+                   String[] parts = line.split(",", -1);
+                   if (parts.length >= 3 && parts[2].equals(book.getIsbn())) {
+                       String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
+                       String borrowerUsername = book.getBorrowerUsername() != null ? book.getBorrowerUsername() : "";
+                       writer.write(book.getTitle() + "," + book.getAuthor() + "," + book.getIsbn() + "," +
+                                    book.isBorrowed() + "," + dueDateStr + "," + borrowerUsername);
+                       found = true;
+                   } else {
+                       writer.write(line);
+                   }
+                   writer.newLine();
+               }
 
-            return found;
-        } catch (IOException e) { e.printStackTrace(); return false; }
-    }
-}
+               reader.close();
+               writer.close();
+
+               if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+                   System.out.println("Error updating book file");
+                   return false;
+               }
+
+               return found;
+           } catch (IOException e) { e.printStackTrace(); return false; }
+       }
+   }

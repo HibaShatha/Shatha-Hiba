@@ -7,13 +7,22 @@ import java.util.List;
 import backend.model.CD;
 
 public class CDRepository {
-    private final String FILE_PATH = "cds.csv";
+    private final String FILE_PATH;
 
     public CDRepository() {
+        this("cds.csv");
+    }
+
+    public CDRepository(String filePath) {
+        this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
         }
+    }
+
+    public String getFilePath() {
+        return FILE_PATH;
     }
 
     public void addCD(CD cd) {
