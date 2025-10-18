@@ -4,13 +4,22 @@ import java.io.*;
 import backend.model.User;
 
 public class UserRepository {
-    private final String FILE_PATH = "users.csv";
+    private final String FILE_PATH;
 
     public UserRepository() {
+        this("users.csv");
+    }
+
+    public UserRepository(String filePath) {
+        this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
         }
+    }
+
+    public String getFilePath() {
+        return FILE_PATH;
     }
 
     public void addUser(User user) {
@@ -83,7 +92,7 @@ public class UserRepository {
             boolean found = false;
 
             while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(",", -1);
                 if (!parts[0].equals(username)) {
                     writer.write(line);
                     writer.newLine();

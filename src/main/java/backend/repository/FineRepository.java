@@ -1,32 +1,39 @@
 package backend.repository;
+
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 public class FineRepository {
-    private final String FILE_PATH = "fines.csv";
+    private final String FILE_PATH;
 
     public FineRepository() {
+        this("fines.csv");
+    }
+
+    public FineRepository(String filePath) {
+        this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
         if (!file.exists()) {
             try { file.createNewFile(); } catch (IOException e) { e.printStackTrace(); }
         }
     }
 
-    
+    public String getFilePath() {
+        return FILE_PATH;
+    }
+
     public double getFineBalance(String username) {
         Map<String, Double> fines = loadFines();
         return fines.getOrDefault(username, 0.0);
     }
 
-    
     public void updateFineBalance(String username, double newBalance) {
         Map<String, Double> fines = loadFines();
         fines.put(username, newBalance);
         saveFines(fines);
     }
 
-   
     private Map<String, Double> loadFines() {
         Map<String, Double> fines = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
@@ -49,7 +56,6 @@ public class FineRepository {
         return fines;
     }
 
-   
     private void saveFines(Map<String, Double> fines) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (Map.Entry<String, Double> entry : fines.entrySet()) {
