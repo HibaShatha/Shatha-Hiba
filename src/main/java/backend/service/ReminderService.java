@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class ReminderService {
     private MediaService bookService;
     private UserService userService;
-    private List<Observer> observers = new ArrayList<>();
+    public List<Observer> observers = new ArrayList<>();
 
     public ReminderService(MediaService bookService, UserService userService) {
         this.bookService = bookService;
