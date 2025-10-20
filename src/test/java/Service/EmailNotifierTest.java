@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EmailNotifierTest {
 
-    private static final String LOG_FILE = "emails.txt";
     private EmailNotifier notifier;
     private User user;
 
@@ -18,7 +17,7 @@ public class EmailNotifierTest {
         user = new User("john_doe", "pass123", "john@example.com", "1234567890");
 
         // Clean up log file before each test
-        File file = new File(LOG_FILE);
+        File file = new File("emails.txt");
         if (file.exists()) file.delete();
     }
 
@@ -29,7 +28,7 @@ public class EmailNotifierTest {
         notifier.notify(user, message);
 
         // Verify the file was created
-        File file = new File(LOG_FILE);
+        File file = new File("emails.txt");
         assertTrue(file.exists(), "emails.txt should be created");
 
         // Read the file content
@@ -39,17 +38,23 @@ public class EmailNotifierTest {
     }
 
     @Test
-    @DisplayName("Test notify() handles IOException gracefully")
-    void testNotifyHandlesIOException() {
-        // Try writing to an invalid path by changing log file via reflection
-        try {
-            var field = EmailNotifier.class.getDeclaredField("LOG_FILE");
-            field.setAccessible(true);
-            field.set(notifier, "/invalid/path/emails.txt"); // force IO error
-        } catch (Exception e) {
-            fail("Reflection setup failed");
-        }
+    @DisplayName("Test notify() handles IOException gracefully and stores the exception message")
+    void testNotifyHandlesIOExceptionAndStoresMessage() {
+        final String simulatedMessage = "Simulated I/O failure";
 
-        assertDoesNotThrow(() -> notifier.notify(user, "Test message"));
+        // subclass that forces an IOException with known message
+        EmailNotifier badNotifier = new EmailNotifier() {
+            @Override
+            protected void logMockEmail(String email, String message) throws IOException {
+                throw new IOException(simulatedMessage);
+            }
+        };
+
+        // call notify - should catch the IOException internally
+        assertDoesNotThrow(() -> badNotifier.notify(user, "Test message"));
+
+        // now assert that the stored lastErrorMessage equals our simulated message
+        assertEquals(simulatedMessage, badNotifier.getLastErrorMessage(),
+                     "The notifier should store the IOException message in lastErrorMessage");
     }
 }
