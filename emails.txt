@@ -1,11 +1,1 @@
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: Hiba@gmail.com | message: Hello Hiba, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: israa@gmail.com | message: Hello israa, you have 1 overdue book(s).
-to: lama@email.com | message: Hello lama, you have 1 overdue book(s).
+to: john@example.com | message: Hello john_doe, Your account has been updated.
