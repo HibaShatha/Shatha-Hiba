@@ -42,6 +42,7 @@ public class MediaService {
 
         System.out.println("Books added successfully!");
     }
+   
 
     public List<Book> searchBook(String keyword) {
         return bookRepo.search(keyword);
@@ -121,6 +122,18 @@ public class MediaService {
             fineRepo.updateFineBalance(username, currentBalance - amount);
             System.out.println("Paid $" + amount + ". Remaining: $" + getUserFineBalance(username));
         }
+    }
+ // =================== Get Repositories for testing ===================
+    public BookRepository getBookRepo() {
+        return this.bookRepo;
+    }
+
+    public CDRepository getCDRepo() {
+        return this.cdRepo;
+    }
+
+    public FineRepository getFineRepo() {
+        return this.fineRepo;
     }
 
     // =================== CDs ===================
