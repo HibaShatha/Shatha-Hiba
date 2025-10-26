@@ -4,11 +4,19 @@ import java.io.*;
 import java.util.*;
 
 public class EmailService {
-    private final String EMAIL_FILE = "emails.csv";
+    private final String emailFile;
+
+    public EmailService() {
+        this("emails.txt"); // القيمة الافتراضية
+    }
+
+    public EmailService(String emailFile) {
+        this.emailFile = emailFile;
+    }
 
     public List<String> getMessagesForEmail(String email) {
         List<String> messages = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(EMAIL_FILE))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(emailFile))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.startsWith("to: " + email + " |")) {
@@ -17,8 +25,10 @@ public class EmailService {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            // فقط تجاهل أو سجل داخلي بدون printStackTrace
+            // e.printStackTrace();
         }
         return messages;
     }
+
 }

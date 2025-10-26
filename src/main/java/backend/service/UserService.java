@@ -4,8 +4,16 @@ import backend.model.User;
 import backend.repository.UserRepository;
 
 public class UserService {
-    private UserRepository repo = new UserRepository();
+    public UserRepository repo;
     private User loggedInUser = null;
+
+    public UserService() {
+        this(new UserRepository());
+    }
+
+    public UserService(UserRepository repo) {
+        this.repo = repo;
+    }
 
     public boolean login(String username, String password) {
         User user = repo.findByUsername(username);

@@ -39,6 +39,22 @@ public class CDTest {
         LocalDate expectedDue = LocalDate.now().plusDays(7);
         assertEquals(expectedDue, cd.getDueDate());
     }
+    
+    @Test
+    @DisplayName("Test isOverdue - when not borrowed but due date passed")
+    void testIsOverdueNotBorrowed() {
+        cd.setDueDate(LocalDate.now().minusDays(2));
+        assertFalse(cd.isOverdue());
+    }
+
+    @Test
+    @DisplayName("Test isOverdue - when due date is null")
+    void testIsOverdueNullDueDate() {
+        cd.borrow("user1");
+        cd.setDueDate(null);
+        assertFalse(cd.isOverdue());
+    }
+
 
     @Test
     @DisplayName("Test returned method")

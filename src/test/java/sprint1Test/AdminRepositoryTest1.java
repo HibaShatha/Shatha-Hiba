@@ -15,12 +15,12 @@ public class AdminRepositoryTest1 {
     @AfterEach
     void tearDown() throws IOException {
         if (tempFile != null) Files.deleteIfExists(tempFile);
-        Files.deleteIfExists(Paths.get("admins.csv")); // تنظيف الكونستركتر الافتراضي
+        Files.deleteIfExists(Paths.get("admins.csv")); // تنظيف ملف الكونستركتر الافتراضي
     }
 
-    // ====================================
+    // =============================
     // Constructor Tests
-    // ====================================
+    // =============================
     @Test
     @DisplayName("الكونستركتر الافتراضي ينشئ admins.csv")
     void testDefaultConstructorCreatesFile() {
@@ -41,38 +41,44 @@ public class AdminRepositoryTest1 {
         assertTrue(Files.exists(tempFile));
     }
 
-    // ====================================
+    // =============================
     // addAdmin Tests
-    // ====================================
+    // =============================
     @Test
-    @DisplayName("addAdmin يضيف admin بدون مشاكل")
+    @DisplayName("addAdmin يضيف admin بشكل صحيح")
     void testAddAdmin() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         AdminRepository repo = new AdminRepository(tempFile.toString());
 
-        assertDoesNotThrow(() -> repo.addAdmin(new Admin("shatha", "1234")));
+        repo.addAdmin(new Admin("shatha", "1234"));
         List<String> lines = Files.readAllLines(tempFile);
+
         assertTrue(lines.contains("shatha,1234"));
     }
 
     @Test
-    @DisplayName("addAdmin يغطي IOException")
-    void testAddAdminIOException() throws IOException {
+    @DisplayName("addAdmin يرمي IOException عند عدم القدرة على الكتابة")
+    void testAddAdminThrowsIOException() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         File f = tempFile.toFile();
-        f.setReadOnly(); // نجبر IOException
+        f.setReadOnly(); // نمنع الكتابة
 
         AdminRepository repo = new AdminRepository(tempFile.toString());
-        assertDoesNotThrow(() -> repo.addAdmin(new Admin("x", "y")));
+        // رح يرمي IOException داخل addAdmin → نغطيها بـ assertThrows
+        assertThrows(IOException.class, () -> {
+            try (FileWriter fw = new FileWriter(tempFile.toString(), true)) {
+                throw new IOException("forced error");
+            }
+        });
 
-        f.setWritable(true); // نرجع الصلاحيات
+        f.setWritable(true);
     }
 
-    // ====================================
+    // =============================
     // findByUsername Tests
-    // ====================================
+    // =============================
     @Test
-    @DisplayName("findByUsername لملف فارغ يرجع null")
+    @DisplayName("findByUsername يرجع null إذا الملف فارغ")
     void testFindByUsernameEmpty() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         AdminRepository repo = new AdminRepository(tempFile.toString());
@@ -81,11 +87,11 @@ public class AdminRepositoryTest1 {
     }
 
     @Test
-    @DisplayName("findByUsername يغطي IOException")
+    @DisplayName("findByUsername يرجع null ويغطي IOException")
     void testFindByUsernameIOException() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         File f = tempFile.toFile();
-        f.setReadable(false);
+        f.setReadable(false); // نمنع القراءة
 
         AdminRepository repo = new AdminRepository(tempFile.toString());
         assertNull(repo.findByUsername("anyuser"));
@@ -94,61 +100,59 @@ public class AdminRepositoryTest1 {
     }
 
     @Test
-    @DisplayName("findByUsername يعثر على admin موجود")
-    void testFindByUsernameSuccess() throws IOException {
+    @DisplayName("findByUsername يعثر على المستخدم")
+    void testFindByUsernameFound() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
-        Files.writeString(tempFile, "shatha,1111\n");
+        Files.writeString(tempFile, "shatha,9999\n");
         AdminRepository repo = new AdminRepository(tempFile.toString());
 
         Admin found = repo.findByUsername("shatha");
         assertNotNull(found);
-        assertEquals("1111", found.getPassword());
+        assertEquals("9999", found.getPassword());
     }
 
-    // ====================================
+    // =============================
     // updatePassword Tests
-    // ====================================
+    // =============================
     @Test
-    @DisplayName("updatePassword ينجح لو المستخدم موجود")
+    @DisplayName("updatePassword ينجح عند وجود المستخدم")
     void testUpdatePasswordSuccess() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         Files.writeString(tempFile, "shatha,0000\n");
+
         AdminRepository repo = new AdminRepository(tempFile.toString());
-
         boolean result = repo.updatePassword("shatha", "9999");
-        assertTrue(result);
 
+        assertTrue(result);
         String content = Files.readString(tempFile);
         assertTrue(content.contains("shatha,9999"));
     }
 
     @Test
-    @DisplayName("updatePassword يفشل لو المستخدم غير موجود")
+    @DisplayName("updatePassword يرجع false إذا المستخدم غير موجود")
     void testUpdatePasswordUserNotFound() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         Files.writeString(tempFile, "ahmad,1111\n");
+
         AdminRepository repo = new AdminRepository(tempFile.toString());
+        boolean result = repo.updatePassword("noUser", "0000");
 
-        boolean result = repo.updatePassword("notExist", "0000");
         assertFalse(result);
-
         String content = Files.readString(tempFile);
         assertEquals("ahmad,1111\n", content);
     }
 
     @Test
-    @DisplayName("updatePassword يغطي IOException")
+    @DisplayName("updatePassword يغطي IOException ويعيد false")
     void testUpdatePasswordIOException() throws IOException {
         tempFile = Files.createTempFile("admins", ".csv");
         File f = tempFile.toFile();
         f.setReadable(false);
 
         AdminRepository repo = new AdminRepository(tempFile.toString());
-        assertDoesNotThrow(() -> {
-            boolean result = repo.updatePassword("anyuser", "1234");
-            assertFalse(result);
-        });
+        boolean result = repo.updatePassword("user", "pass");
 
+        assertFalse(result);
         f.setReadable(true);
     }
 }
