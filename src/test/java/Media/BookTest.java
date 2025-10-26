@@ -77,4 +77,20 @@ public class BookTest {
         double expectedFine = new BookFineStrategy().calculateFine(3);
         assertEquals(expectedFine, book.calculateFine());
     }
+    
+    @Test
+    @DisplayName("Test isOverdue - when not borrowed but due date passed")
+    void testIsOverdueNotBorrowed() {
+        book.setDueDate(LocalDate.now().minusDays(2));
+        assertFalse(book.isOverdue());
+    }
+
+    @Test
+    @DisplayName("Test isOverdue - when due date is null")
+    void testIsOverdueNullDueDate() {
+        book.borrow("user1");
+        book.setDueDate(null);
+        assertFalse(book.isOverdue());
+    }
+
 }

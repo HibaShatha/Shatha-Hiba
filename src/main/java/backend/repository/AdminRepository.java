@@ -74,12 +74,10 @@ public class AdminRepository {
             }
 
             if (!found) {
-                // المستخدم مش موجود — نحذف الملف المؤقت ونترك الملف الأصلي كما هو
                 Files.deleteIfExists(tempPath);
                 return false;
             }
 
-            // استبدال الملف الأصلي بالمؤقت (آمن، ويستبدل لو موجود)
             Files.move(tempPath, inputPath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             return true;
 
