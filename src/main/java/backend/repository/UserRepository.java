@@ -3,13 +3,34 @@ package backend.repository;
 import java.io.*;
 import backend.model.User;
 
+/**
+ * Repository class for managing users.
+ * <p>
+ * Provides methods to add, find, update password, and remove users stored in a CSV file.
+ * Automatically creates the file if it does not exist.
+ * </p>
+ * <p>
+ * Version 1.2.0 - Updated to safely handle CSV parsing, password updates, and user removal.
+ * </p>
+ * 
+ * @author Hiba_ibraheem
+ * @version 1.2.0
+ */
 public class UserRepository {
+
+    /** Path to the CSV file storing user data */
     private final String FILE_PATH;
 
+    /** Default constructor using "users.csv" */
     public UserRepository() {
         this("users.csv");
     }
 
+    /**
+     * Constructor with custom file path.
+     *
+     * @param filePath path to the CSV file
+     */
     public UserRepository(String filePath) {
         this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
@@ -18,10 +39,12 @@ public class UserRepository {
         }
     }
 
+    /** Returns the file path used by this repository */
     public String getFilePath() {
         return FILE_PATH;
     }
 
+    /** Adds a new user to the CSV file */
     public void addUser(User user) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
             bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getEmail() + "," + user.getPhoneNumber());
@@ -29,6 +52,12 @@ public class UserRepository {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
+    /**
+     * Finds a user by username.
+     *
+     * @param username the username to search for
+     * @return the User object if found; null otherwise
+     */
     public User findByUsername(String username) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
@@ -44,6 +73,13 @@ public class UserRepository {
         return null;
     }
 
+    /**
+     * Updates the password for a specific user.
+     *
+     * @param username    the username to update
+     * @param newPassword the new password
+     * @return true if the user was found and updated; false otherwise
+     */
     public boolean updatePassword(String username, String newPassword) {
         try {
             File inputFile = new File(FILE_PATH);
@@ -80,6 +116,12 @@ public class UserRepository {
         } catch (IOException e) { e.printStackTrace(); return false; }
     }
 
+    /**
+     * Removes a user from the CSV file.
+     *
+     * @param username the username to remove
+     * @return true if the user was found and removed; false otherwise
+     */
     public boolean removeUser(String username) {
         try {
             File inputFile = new File(FILE_PATH);

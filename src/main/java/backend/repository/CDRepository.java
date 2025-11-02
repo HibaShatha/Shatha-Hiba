@@ -6,13 +6,34 @@ import java.util.ArrayList;
 import java.util.List;
 import backend.model.CD;
 
+/**
+ * Repository class for managing CD data.
+ * <p>
+ * Provides methods to add, retrieve, and update CDs stored in a CSV file.
+ * Automatically creates the file if it does not exist.
+ * </p>
+ * <p>
+ * Only important methods are documented to keep it clean and professional.
+ * </p>
+ * 
+ * @author Hiba_ibraheem
+ * @version 1.0.0
+ */
 public class CDRepository {
+
+    /** Path to the CSV file storing CD data */
     private final String FILE_PATH;
 
+    /** Default constructor using "cds.csv" */
     public CDRepository() {
         this("cds.csv");
     }
 
+    /**
+     * Constructor with custom file path.
+     *
+     * @param filePath path to the CSV file
+     */
     public CDRepository(String filePath) {
         this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
@@ -21,10 +42,12 @@ public class CDRepository {
         }
     }
 
+    /** Returns the file path used by this repository */
     public String getFilePath() {
         return FILE_PATH;
     }
 
+    /** Adds a new CD to the CSV file */
     public void addCD(CD cd) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
             String dueDateStr = cd.getDueDate() != null ? cd.getDueDate().toString() : "";
@@ -34,6 +57,14 @@ public class CDRepository {
         } catch (IOException e) { e.printStackTrace(); }
     }
 
+    /**
+     * Retrieves all CDs from the CSV file.
+     * <p>
+     * Parses each line into a CD object, including borrowed status, due date, and borrower.
+     * </p>
+     *
+     * @return list of all CDs
+     */
     public List<CD> getAllCDs() {
         List<CD> cds = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
@@ -54,6 +85,15 @@ public class CDRepository {
         return cds;
     }
 
+    /**
+     * Updates a CD's information in the CSV file.
+     * <p>
+     * Uses a temporary file to safely replace the original file.
+     * </p>
+     *
+     * @param cd the CD object with updated information
+     * @return true if the CD was found and updated; false otherwise
+     */
     public boolean updateCD(CD cd) {
         try {
             File inputFile = new File(FILE_PATH);

@@ -1,13 +1,31 @@
 package backend.service;
+
 import backend.model.Admin;
 import backend.repository.AdminRepository;
 import backend.repository.UserRepository;
 import backend.service.MediaService;
 
+/**
+ * Service class for handling admin-related operations.
+ * <p>
+ * Includes login, logout, account creation, password reset, and user unregistration.
+ * Only the key or complex methods are documented.
+ * </p>
+ * 
+ * @author Shatha_Dweikat
+ * @version 1.0.0
+ */
 public class AdminService {
     private AdminRepository repo = new AdminRepository();
     private Admin loggedInAdmin = null;
 
+    /**
+     * Attempts to log in an admin with provided credentials.
+     *
+     * @param username the admin username
+     * @param password the admin password
+     * @return true if login successful, false otherwise
+     */
     public boolean login(String username, String password) {
         Admin admin = repo.findByUsername(username);
         if (admin != null && admin.getPassword().equals(password)) {
@@ -54,6 +72,19 @@ public class AdminService {
         }
     }
 
+    /**
+     * Unregisters a user after performing necessary checks:
+     * <ul>
+     *     <li>Admin must be logged in.</li>
+     *     <li>User must exist.</li>
+     *     <li>User must have no active borrowed books.</li>
+     *     <li>User must have no unpaid fines.</li>
+     * </ul>
+     *
+     * @param username the username of the user to remove
+     * @param userRepo the UserRepository instance for managing users
+     * @param bookService the MediaService instance for checking borrowed books and fines
+     */
     public void unregisterUser(String username, UserRepository userRepo, MediaService bookService) {
         if (!isLoggedIn()) {
             System.out.println("Please login as admin first!");

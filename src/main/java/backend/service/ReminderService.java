@@ -6,7 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
+/**
+ * Service for sending reminders to users about overdue books.
+ * Uses Observer pattern to notify via multiple channels (Email, SMS).
+ * 
+ * @author Shatha_Dweikat
+ * @version 2.0 // updated after adding Observer pattern for multi-channel reminders
+ */
 public class ReminderService {
     private MediaService bookService;
     private UserService userService;

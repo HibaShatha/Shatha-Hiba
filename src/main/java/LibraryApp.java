@@ -10,6 +10,11 @@ import backend.service.MediaService;
 import backend.service.UserService;
 import backend.service.EmailService;
 import backend.service.ReminderService;
+/**
+ * Main entry point for the Library Application.
+ * Provides a console-based interface for Admins and Users
+ * to manage books, CDs, accounts, and fines.
+ */
 
 public class LibraryApp {
     public static void main(String[] args) {
@@ -70,14 +75,14 @@ public class LibraryApp {
                     if (adminService.login(username, password)) {
                         adminMenu(scanner, adminService, mediaService, userService);
                     } else {
-                        System.out.println("Invalid credentials! Try again.");
+                        System.out.println("Try again.");
                     }
                     break;
                 case 2:
                     if (userService.login(username, password)) {
                         userMenu(scanner, userService, mediaService);
                     } else {
-                        System.out.println("Invalid credentials! Try again.");
+                        System.out.println("Try again.");
                     }
                     break;
                 default:
@@ -115,11 +120,9 @@ public class LibraryApp {
             switch (accountType) {
                 case 1:
                     adminService.createAccount(username, password);
-                    System.out.println("Admin account created!");
                     break;
                 case 2:
                     userService.createAccount(username, password, email, phoneNumber);
-                    System.out.println("User account created!");
                     break;
                 default:
                     System.out.println("Invalid option!");
