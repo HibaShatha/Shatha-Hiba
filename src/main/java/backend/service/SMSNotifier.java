@@ -4,7 +4,13 @@ import backend.model.User;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-
+/**
+ * Observer for sending mock SMS notifications to users.
+ * Logs SMS messages to sms.csv.
+ * 
+ * @author Shatha_Dweikat
+ * @version 2.1.0 // added SMS notifications as new observer
+ */
 public class SMSNotifier implements Observer {
     private final String LOG_FILE = "sms.csv";
 

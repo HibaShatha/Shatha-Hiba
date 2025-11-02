@@ -9,7 +9,13 @@ import backend.model.CD;
 import backend.repository.BookRepository;
 import backend.repository.CDRepository;
 import backend.repository.FineRepository;
-
+/**
+ * Service class for managing Books and CDs, including borrowing, returning,
+ * fines, and administrative actions.
+ * 
+ * @author Hiba_ibraheem
+ * @version 2.0 // updated after adding CD management and fine calculations
+ */
 public class MediaService {
     private BookRepository bookRepo = new BookRepository();
     private CDRepository cdRepo = new CDRepository();

@@ -2,7 +2,22 @@ package backend.model;
 
 import java.time.LocalDate;
 import backend.model.fine.FineStrategy;
-
+/**
+ * Abstract class representing a general media item in the system.
+ * <p>
+ * This can be a Book, CD, or any other media type. It stores basic
+ * information like title, author, ISBN (if applicable), borrowing status,
+ * due date, and the borrower’s username.
+ * </p>
+ * 
+ * <p>
+ * Each subclass must implement borrowing logic, returning, overdue check,
+ * and fine calculation according to its specific rules.
+ * </p>
+ *
+ * @author Shatha_Dweikat
+ * @version 1.0.0
+ */
 public abstract class Media {
     protected String title;
     protected String author;
@@ -12,6 +27,7 @@ public abstract class Media {
     public String borrowerUsername;
     protected FineStrategy fineStrategy;
 
+  
     public Media(String title, String author, String isbn, FineStrategy fineStrategy) {
         this.title = title;
         this.author = author;
