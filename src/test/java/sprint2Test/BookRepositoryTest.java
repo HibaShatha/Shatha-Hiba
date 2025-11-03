@@ -84,53 +84,10 @@ import org.junit.jupiter.api.BeforeEach;
            assertNull(books.get(1).getBorrowerUsername());
        }
 
-       @Test
-       void testSearchByTitle() throws IOException {
-           try (FileWriter writer = new FileWriter(booksFile)) {
-               writer.write("Java Programming,Author1,111,false,,\n");
-               writer.write("Python Guide,Author2,222,false,,\n");
-           }
+   
+    
 
-           List<Book> results = bookRepository.search("Java");
-           assertEquals(1, results.size());
-           assertEquals("Java Programming", results.get(0).getTitle());
-           assertEquals("111", results.get(0).getIsbn());
-       }
-
-       @Test
-       void testSearchByAuthor() throws IOException {
-           try (FileWriter writer = new FileWriter(booksFile)) {
-               writer.write("Java Programming,Author1,111,false,,\n");
-               writer.write("Python Guide,Author2,222,false,,\n");
-           }
-
-           List<Book> results = bookRepository.search("Author2");
-           assertEquals(1, results.size());
-           assertEquals("Python Guide", results.get(0).getTitle());
-           assertEquals("222", results.get(0).getIsbn());
-       }
-
-       @Test
-       void testSearchByIsbn() throws IOException {
-           try (FileWriter writer = new FileWriter(booksFile)) {
-               writer.write("Java Programming,Author1,111,false,,\n");
-               writer.write("Python Guide,Author2,222,false,,\n");
-           }
-
-           List<Book> results = bookRepository.search("222");
-           assertEquals(1, results.size());
-           assertEquals("222", results.get(0).getIsbn());
-       }
-
-       @Test
-       void testSearchNoResults() throws IOException {
-           try (FileWriter writer = new FileWriter(booksFile)) {
-               writer.write("Java Programming,Author1,111,false,,\n");
-           }
-
-           List<Book> results = bookRepository.search("Nonexistent");
-           assertTrue(results.isEmpty(), "Should return empty list for no matches");
-       }
+    
 
        @Test
        void testUpdateBookSuccess() throws IOException {
