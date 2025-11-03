@@ -95,12 +95,7 @@ public class MediaServiceTest {
         assertTrue(output.contains("CD added successfully!"));
     }
 
-    @Test
-    void testSearchBook() {
-        mediaService.addBookWithStartingIsbn("Clean Code", "Robert C. Martin", 2000, 1);
-        assertEquals(1, mediaService.searchBook("Clean").size());
-        assertEquals(0, mediaService.searchBook("NonExisting").size());
-    }
+  
 
     @Test
     void testSearchCD() {

@@ -9,6 +9,8 @@ import backend.model.CD;
 import backend.repository.BookRepository;
 import backend.repository.CDRepository;
 import backend.repository.FineRepository;
+import backend.strategy.Search;
+import backend.strategy.SearchStrategy;
 /**
  * Service class for managing Books and CDs, including borrowing, returning,
  * fines, and administrative actions.
@@ -49,10 +51,11 @@ public class MediaService {
         System.out.println("Books added successfully!");
     }
    
-
-    public List<Book> searchBook(String keyword) {
-        return bookRepo.search(keyword);
+    public List<Book> searchBooks(Search searchContext, String keyword) {
+        return searchContext.performSearch(getAllBooks(), keyword);
     }
+
+
 
     public List<Book> getAllBooks() {
         return bookRepo.getAllBooks();

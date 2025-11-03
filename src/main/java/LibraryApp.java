@@ -1,3 +1,4 @@
+
 import java.util.List;
 import java.util.Scanner;
 
@@ -8,6 +9,11 @@ import backend.repository.UserRepository;
 import backend.service.AdminService;
 import backend.service.MediaService;
 import backend.service.UserService;
+import backend.strategy.AuthorSearchStrategy;
+import backend.strategy.IsbnSearchStrategy;
+import backend.strategy.Search;
+import backend.strategy.SearchStrategy;
+import backend.strategy.TitleSearchStrategy;
 import backend.service.EmailService;
 import backend.service.ReminderService;
 /**
@@ -204,18 +210,52 @@ public class LibraryApp {
                 case 3:
                     System.out.print("Search Book or CD (enter 'book' or 'cd'): "); 
                     String type = scanner.nextLine().toLowerCase();
-                    System.out.print("Enter keyword: ");
-                    String keyword = scanner.nextLine();
+
                     if (type.equals("book")) {
-                        List<Book> books = mediaService.searchBook(keyword);
-                        if (books.isEmpty()) System.out.println("No books found!");
-                        else for (Book b : books) System.out.println(formatMediaInfo(b));
+                        System.out.print("Search by (title/author/isbn): ");
+                        String mode = scanner.nextLine().toLowerCase();
+
+                        System.out.print("Enter keyword: ");
+                        String keyword = scanner.nextLine();
+
+                        // اختيار الاستراتيجية حسب اختيار المستخدم
+                        SearchStrategy strategy = null;
+                        switch (mode) {
+                            case "title":
+                                strategy = new TitleSearchStrategy();
+                                break;
+                            case "author":
+                                strategy = new AuthorSearchStrategy();
+                                break;
+                            case "isbn":
+                                strategy = new IsbnSearchStrategy();
+                                break;
+                            default:
+                                System.out.println("Invalid search type!");
+                                break;
+                        }
+
+                        // إنشاء الـ context وتنفيذ البحث
+                        Search searchContext = new Search(strategy);
+                        List<Book> results = mediaService.searchBooks(searchContext, keyword);
+
+                        if (results.isEmpty()) System.out.println("No books found!");
+                        else for (Book b : results) System.out.println(formatMediaInfo(b));
+
                     } else if (type.equals("cd")) {
+                        System.out.print("Enter keyword: ");
+                        String keyword = scanner.nextLine();
+
                         List<CD> cds = mediaService.searchCD(keyword);
                         if (cds.isEmpty()) System.out.println("No CDs found!");
                         else for (CD c : cds) System.out.println(formatMediaInfo(c));
-                    } else System.out.println("Invalid type!");
+
+                    } else {
+                        System.out.println("Invalid type!");
+                    }
                     break;
+
+
                 case 4:
                     for (Book b : mediaService.getAllBooks()) System.out.println(formatMediaInfo(b));
                     break;
@@ -267,21 +307,60 @@ public class LibraryApp {
             scanner.nextLine();
 
             switch (option) {
-                case 1:
-                    System.out.print("Search Book or CD (enter 'book' or 'cd'): ");
-                    String type = scanner.nextLine().toLowerCase();
+            case 1:
+                System.out.print("Search Book or CD (enter 'book' or 'cd'): ");
+                String type = scanner.nextLine().toLowerCase();
+
+                if (type.equals("book")) {
+                    System.out.print("Search by (title/author/isbn): ");
+                    String mode = scanner.nextLine().toLowerCase();
+
                     System.out.print("Enter keyword: ");
                     String keyword = scanner.nextLine();
-                    if (type.equals("book")) {
-                        List<Book> books = mediaService.searchBook(keyword);
-                        if (books.isEmpty()) System.out.println("No books found!");
-                        else for (Book b : books) System.out.println(formatMediaInfo(b));
-                    } else if (type.equals("cd")) {
-                        List<CD> cds = mediaService.searchCD(keyword);
-                        if (cds.isEmpty()) System.out.println("No CDs found!");
-                        else for (CD c : cds) System.out.println(formatMediaInfo(c));
-                    } else System.out.println("Invalid type!");
-                    break;
+
+                    // تهيئة الاستراتيجية بـ null
+                    SearchStrategy strategy = null;
+
+                    switch (mode) {
+                        case "title":
+                            strategy = new TitleSearchStrategy();
+                            break;
+                        case "author":
+                            strategy = new AuthorSearchStrategy();
+                            break;
+                        case "isbn":
+                            strategy = new IsbnSearchStrategy();
+                            break;
+                        default:
+                            System.out.println("Invalid search type!");
+                            break;
+                    }
+
+                    // تأكد من أنها مش null قبل الاستخدام
+                    if (strategy != null) {
+                        Search searchContext = new Search(strategy);
+                        List<Book> results = mediaService.searchBooks(searchContext, keyword);
+
+                        if (results.isEmpty()) System.out.println("No books found!");
+                        else for (Book b : results) System.out.println(formatMediaInfo(b));
+                    } else {
+                        System.out.println("Search cancelled due to invalid type.");
+                    }
+
+                } else if (type.equals("cd")) {
+                    System.out.print("Enter keyword: ");
+                    String keyword = scanner.nextLine();
+
+                    // البحث عن CDs كما هو
+                    List<CD> cds = mediaService.searchCD(keyword);
+                    if (cds.isEmpty()) System.out.println("No CDs found!");
+                    else for (CD c : cds) System.out.println(formatMediaInfo(c));
+
+                } else {
+                    System.out.println("Invalid type!");
+                }
+                break;
+
                 case 2:
                     for (Book b : mediaService.getAllBooks()) System.out.println(formatMediaInfo(b));
                     break;
@@ -339,3 +418,5 @@ public class LibraryApp {
                (m.isOverdue() ? ", Fine: $" + m.calculateFine() : "") : "No");
     }
 }
+
+
