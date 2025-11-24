@@ -1,3 +1,5 @@
+// File: src/backend/service/ReminderService.java
+
 package backend.service;
 
 import backend.model.Book;
@@ -6,23 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-/**
- * Service for sending reminders to users about overdue books.
- * Uses Observer pattern to notify via multiple channels (Email, SMS).
- * 
- * @author Shatha_Dweikat
- * @version 2.0 // updated after adding Observer pattern for multi-channel reminders
- */
-public class ReminderService {
-    private MediaService bookService;
-    private UserService userService;
-    public List<Observer> observers = new ArrayList<>();
 
-    public ReminderService(MediaService bookService, UserService userService) {
-        this.bookService = bookService;
+public class ReminderService {
+    private final MediaService mediaService;
+    private final UserService userService;
+    protected final List<Observer> observers = new ArrayList<>();
+
+    public ReminderService(MediaService mediaService, UserService userService) {
+        this.mediaService = mediaService;
         this.userService = userService;
-        addObserver(new EmailNotifier());
-        addObserver(new SMSNotifier());
+
+        // Real email notification
+        observers.add(new RealEmailNotifier());
+
+        // Fake SMS notification (you can disable it if you don't need it)
+        observers.add(new SMSNotifier());
     }
 
     public void addObserver(Observer observer) {
@@ -34,23 +34,27 @@ public class ReminderService {
     }
 
     public void sendReminders() {
-        Map<String, List<Book>> overdueByUser = bookService.getOverdueBooks()
+        Map<String, List<Book>> overdueByUser = mediaService.getOverdueBooks()
                 .stream()
                 .collect(Collectors.groupingBy(Book::getBorrowerUsername));
 
         if (overdueByUser.isEmpty()) {
-            System.out.println("No overdue books found. No reminders sent.");
+            System.out.println("No overdue books. No reminders were sent.");
             return;
         }
 
         overdueByUser.forEach((username, books) -> {
             User user = userService.findByUsername(username);
             if (user != null) {
-                String message = "you have " + books.size() + " overdue book(s).";
+                String message = "You have " + books.size() +
+                    (books.size() == 1 ? " overdue book." : " overdue books.");
+                
                 for (Observer observer : observers) {
                     observer.notify(user, message);
                 }
             }
         });
+
+        System.out.println("Reminders sent successfully!");
     }
 }
