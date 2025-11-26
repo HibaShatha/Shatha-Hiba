@@ -18,7 +18,7 @@ public class BookRepository {
     private final String FILE_PATH;
 
     public BookRepository() {
-        this("books.csv");
+        this("files/books.csv");
     }
 
     public BookRepository(String filePath) {
@@ -82,7 +82,7 @@ public class BookRepository {
     public boolean updateBook(Book book) {
         try {
             File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp_books.csv");
+            File tempFile = new File("files/temp_books.csv");
 
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));

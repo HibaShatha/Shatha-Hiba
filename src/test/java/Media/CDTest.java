@@ -2,8 +2,11 @@ package Media;
 
 import backend.model.CD;
 import backend.model.fine.CDFineStrategy;
+import backend.repository.CDRepository;
+
 import org.junit.jupiter.api.*;
 import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -93,4 +96,34 @@ public class CDTest {
         double expectedFine = new CDFineStrategy().calculateFine(5);
         assertEquals(expectedFine, cd.calculateFine());
     }
+    @Test
+    @DisplayName("Test adding CD to repository without exceptions")
+    void testAddCDNoException() {
+        CDRepository repo = new CDRepository("files/test_cds.csv");
+        CD testCD = new CD("Test Title", "Test Author");
+
+        assertDoesNotThrow(() -> repo.addCD(testCD), "Adding CD should not throw any exception");
+    }
+
+    @Test
+    @DisplayName("Test updating CD in repository without exceptions")
+    void testUpdateCDNoException() {
+        CDRepository repo = new CDRepository("files/test_cds.csv");
+        CD testCD = new CD("Test Title", "Test Author");
+        testCD.borrow("user1");
+
+        assertDoesNotThrow(() -> repo.updateCD(testCD), "Updating CD should not throw any exception");
+    }
+
+    @Test
+    @DisplayName("Test retrieving CDs without exceptions")
+    void testGetAllCDsNoException() {
+        CDRepository repo = new CDRepository("files/test_cds.csv");
+
+        assertDoesNotThrow(() -> {
+            List<CD> cds = repo.getAllCDs();
+            assertNotNull(cds, "Returned list should not be null");
+        }, "Getting all CDs should not throw any exception");
+    }
+
 }

@@ -24,7 +24,7 @@ public class FineRepository {
 
     /** Default constructor using "fines.csv" */
     public FineRepository() {
-        this("fines.csv");
+        this("files/fines.csv");
     }
 
     /**

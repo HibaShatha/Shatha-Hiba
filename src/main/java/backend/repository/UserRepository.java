@@ -23,7 +23,7 @@ public class UserRepository {
 
     /** Default constructor using "users.csv" */
     public UserRepository() {
-        this("users.csv");
+        this("files/users.csv");
     }
 
     /**
@@ -83,7 +83,7 @@ public class UserRepository {
     public boolean updatePassword(String username, String newPassword) {
         try {
             File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp_users.csv");
+            File tempFile = new File("files/temp_users.csv");
 
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
@@ -125,7 +125,7 @@ public class UserRepository {
     public boolean removeUser(String username) {
         try {
             File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp_users.csv");
+            File tempFile = new File("files/temp_users.csv");
 
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));

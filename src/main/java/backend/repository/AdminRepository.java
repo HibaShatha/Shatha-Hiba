@@ -24,7 +24,7 @@ public class AdminRepository {
 
     /** Default constructor using "admins.csv" as the file path */
     public AdminRepository() {
-        this("admins.csv");
+        this("files/admins.csv");
     }
 
     /**
