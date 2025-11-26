@@ -26,7 +26,7 @@ public class CDRepository {
 
     /** Default constructor using "cds.csv" */
     public CDRepository() {
-        this("cds.csv");
+        this("files/cds.csv");
     }
 
     /**
@@ -97,7 +97,7 @@ public class CDRepository {
     public boolean updateCD(CD cd) {
         try {
             File inputFile = new File(FILE_PATH);
-            File tempFile = new File("temp_cds.csv");
+            File tempFile = new File("files/temp_cds.csv");
 
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));

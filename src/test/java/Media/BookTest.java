@@ -31,12 +31,15 @@ public class BookTest {
     @Test
     @DisplayName("Test borrow method")
     void testBorrow() {
+        LocalDate today = LocalDate.now();
+        
         book.borrow("user1");
+
         assertTrue(book.isBorrowed());
         assertEquals("user1", book.getBorrowerUsername());
         assertNotNull(book.getDueDate());
 
-        LocalDate expectedDue = LocalDate.now().plusDays(28);
+        LocalDate expectedDue = today.plusDays(28);
         assertEquals(expectedDue, book.getDueDate());
     }
 
@@ -69,12 +72,12 @@ public class BookTest {
     @DisplayName("Test calculateFine")
     void testCalculateFine() {
         book.borrow("user1");
-        // not overdue => fine should be 0
+
         assertEquals(0.0, book.calculateFine());
 
-        // overdue => fine should be calculated
         book.setDueDate(LocalDate.now().minusDays(3));
         double expectedFine = new BookFineStrategy().calculateFine(3);
+
         assertEquals(expectedFine, book.calculateFine());
     }
     

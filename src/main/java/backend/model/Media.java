@@ -23,7 +23,7 @@ public abstract class Media {
     protected String author;
     protected String isbn;
     public boolean borrowed;
-    protected LocalDate dueDate;
+    public LocalDate dueDate;
     public String borrowerUsername;
     protected FineStrategy fineStrategy;
 

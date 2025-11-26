@@ -4,7 +4,11 @@ import java.util.Scanner;
 
 import backend.model.Book;
 import backend.model.CD;
+import backend.model.Librarian;
 import backend.model.Media;
+import backend.repository.BookRepository;
+import backend.repository.CDRepository;
+import backend.repository.FineRepository;
 import backend.repository.UserRepository;
 import backend.service.AdminService;
 import backend.service.MediaService;
@@ -16,6 +20,8 @@ import backend.strategy.SearchStrategy;
 import backend.strategy.TitleSearchStrategy;
 import backend.service.EmailService;
 import backend.service.ReminderService;
+
+
 /**
  * Main entry point for the Library Application.
  * Provides a console-based interface for Admins and Users
@@ -25,10 +31,20 @@ import backend.service.ReminderService;
 public class LibraryApp {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        
+        // إنشاء الـ repositories
+        BookRepository bookRepo = new BookRepository();
+        CDRepository cdRepo = new CDRepository();
+        FineRepository fineRepo = new FineRepository();
+
+        // تشغيل الـ Librarian thread
+        Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
+        Thread librarianThread = new Thread(librarian);
+        librarianThread.start();
+
         AdminService adminService = new AdminService();
         UserService userService = new UserService();
         MediaService mediaService = new MediaService(adminService);
-
         while (true) {
             System.out.println("\n=== Main Menu ===");
             System.out.println("1- Login");
@@ -412,7 +428,7 @@ public class LibraryApp {
     }
 
     private static String formatMediaInfo(Media m) {
-        return m.getTitle() + " (" + m.getMediaType() + ")" +
+        return m.getTitle() + " (" + m.getMediaType() + ")" + "ISBN : " +m.getIsbn()+
                " | Borrowed: " + (m.isBorrowed() ? 
                "Yes, Due: " + m.getDueDate() + ", By: " + m.getBorrowerUsername() +
                (m.isOverdue() ? ", Fine: $" + m.calculateFine() : "") : "No");

@@ -25,7 +25,7 @@ class AdminServiceTest {
 
     @BeforeEach
     void setup() throws IOException {
-        tempUserFile = new File("users.csv");
+        tempUserFile = new File("files/users.csv");
         if (tempUserFile.exists()) tempUserFile.delete();
 
         adminService = new AdminService();
@@ -43,7 +43,7 @@ class AdminServiceTest {
     @AfterEach
     void cleanup() {
         if (tempUserFile.exists()) tempUserFile.delete();
-        File admins = new File("admins.csv");
+        File admins = new File("files/admins.csv");
         if (admins.exists()) admins.delete();
     }
 

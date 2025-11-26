@@ -24,11 +24,11 @@ public class MediaServiceTest {
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // مسح الملفات القديمة
-        File bookFile = new File("books.csv");
+        File bookFile = new File("files/books.csv");
         if (bookFile.exists()) bookFile.delete();
         bookFile.createNewFile();
 
-        File cdFile = new File("cds.csv");
+        File cdFile = new File("files/cds.csv");
         if (cdFile.exists()) cdFile.delete();
         cdFile.createNewFile();
 

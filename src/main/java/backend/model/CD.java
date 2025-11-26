@@ -66,8 +66,12 @@ public class CD extends Media {
      */
     @Override
     public boolean isOverdue() {
-        return borrowed && dueDate != null && LocalDate.now().isAfter(dueDate);
+        if (!isBorrowed()) return false;
+        if (dueDate == null) return false;
+        return LocalDate.now().isAfter(dueDate);
     }
+
+
 
     /**
      * Calculates the fine for the CD if it is overdue.
@@ -79,9 +83,10 @@ public class CD extends Media {
      * @return the fine amount; returns {@code 0.0} if the CD is not overdue
      */
     @Override
-    public double calculateFine() {
-        if (!isOverdue()) return 0.0;
-        long overdueDays = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
-        return fineStrategy.calculateFine((int) overdueDays);
-    }
+    public double calculateFine() { 
+    	if (!isOverdue()) 
+    		return 0.0;
+    	long overdueDays = ChronoUnit.DAYS.between(dueDate, LocalDate.now()); 
+    	return fineStrategy.calculateFine((int) overdueDays); 
+    	}
 }

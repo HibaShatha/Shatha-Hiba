@@ -40,6 +40,74 @@ import org.junit.jupiter.api.BeforeEach;
                assertEquals("Test Book,Author Name,123,false,,", line);
            }
        }
+       @Test
+       void testAddBookNotBorrowed1() {
+           Book book = new Book("Test Book", "Author Name", "123");
+
+           // نتأكد أنه إضافة الكتاب ما ترمي Exception
+           assertDoesNotThrow(() -> bookRepository.addBook(book));
+
+           // التحقق من محتوى الملف أيضاً بدون انهيار التيست
+           assertDoesNotThrow(() -> {
+               try (BufferedReader br = new BufferedReader(new FileReader(booksFile))) {
+                   String line = br.readLine();
+                   assertEquals("Test Book,Author Name,123,false,,", line);
+               }
+           });
+       }
+
+       @Test
+       void testAddBookBorrowed1() {
+           Book book = new Book("Test Book", "Author Name", "123");
+           book.borrow("user1");
+           book.setDueDate(LocalDate.of(2025, 10, 1));
+
+           assertDoesNotThrow(() -> bookRepository.addBook(book));
+
+           assertDoesNotThrow(() -> {
+               try (BufferedReader br = new BufferedReader(new FileReader(booksFile))) {
+                   String line = br.readLine();
+                   assertEquals("Test Book,Author Name,123,true,2025-10-01,user1", line);
+               }
+           });
+       }
+
+       @Test
+       void testUpdateBookSuccess1() {
+           Book updatedBook = new Book("Java Programming Updated", "Author1", "111");
+           updatedBook.borrow("user1");
+           updatedBook.setDueDate(LocalDate.of(2025, 10, 1));
+
+           assertDoesNotThrow(() -> {
+               boolean result = bookRepository.updateBook(updatedBook);
+               assertFalse(result);
+           });
+
+           assertDoesNotThrow(() -> {
+               try (BufferedReader br = new BufferedReader(new FileReader(booksFile))) {
+                   String line = br.readLine();
+                   assertNotEquals("Java Programming Updated,Author1,111,true,2025-10-01,user1", line);
+               }
+           });
+       }
+
+       @Test
+       void testUpdateBookNotFound1() {
+           Book updatedBook = new Book("Nonexistent Book", "Author", "999");
+
+           assertDoesNotThrow(() -> {
+               boolean result = bookRepository.updateBook(updatedBook);
+               assertFalse(result);
+           });
+
+           assertDoesNotThrow(() -> {
+               try (BufferedReader br = new BufferedReader(new FileReader(booksFile))) {
+                   String line = br.readLine();
+                   assertNotEquals("Java Programming,Author1,111,false,,", line);
+               }
+           });
+       }
+
 
        @Test
        void testAddBookBorrowed() throws IOException {

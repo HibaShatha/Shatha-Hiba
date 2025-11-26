@@ -67,10 +67,15 @@ public class Book extends Media {
      * @return {@code true} if the book is borrowed and the current date
      *         is after the due date; {@code false} otherwise
      */
+    
     @Override
     public boolean isOverdue() {
-        return borrowed && dueDate != null && LocalDate.now().isAfter(dueDate);
+        if (!isBorrowed()) return false; // لو مش مستعارة
+        if (dueDate == null) return false; // لو ما معبّية dueDate ما تعتبر متأخرة
+        return java.time.LocalDate.now().isAfter(dueDate);
     }
+
+
 
     /**
      * Calculates the fine for the book if it is overdue.
@@ -82,9 +87,11 @@ public class Book extends Media {
      * @return the fine amount; returns {@code 0.0} if the book is not overdue
      */
     @Override
-    public double calculateFine() {
-        if (!isOverdue()) return 0.0;
-        long overdueDays = ChronoUnit.DAYS.between(dueDate, LocalDate.now());
-        return fineStrategy.calculateFine((int) overdueDays);
-    }
+
+    public double calculateFine() { 
+    	if (!isOverdue()) 
+    		return 0.0;
+    	long overdueDays = ChronoUnit.DAYS.between(dueDate, LocalDate.now()); 
+    	return fineStrategy.calculateFine((int) overdueDays); 
+    	}
 }
