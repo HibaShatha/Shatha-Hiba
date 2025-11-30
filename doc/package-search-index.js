@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html","k":"18"},{"l":"backend.model"},{"l":"backend.model.fine"},{"l":"backend.repository"},{"l":"backend.service"},{"l":"backend.strategy"},{"l":"backendmodelfinetest"},{"l":"Media"},{"l":"Service"},{"l":"sprint1Test"},{"l":"sprint2Test"},{"l":"Strategy"},{"l":"User"}];updateSearchResults();

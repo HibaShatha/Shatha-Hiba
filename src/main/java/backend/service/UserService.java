@@ -3,7 +3,7 @@ package backend.service;
 import backend.model.User;
 import backend.repository.UserRepository;
 /**
- * @author Hiba_ibraheem
+ *@author Hiba_ibraheem
  * Service class for managing users, login/logout, and account operations.
  * Version: 1.0.0
  */
