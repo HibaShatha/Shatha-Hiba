@@ -4,7 +4,16 @@ package backend.model;
 import backend.repository.BookRepository;
 import backend.repository.CDRepository;
 import backend.repository.FineRepository;
-
+/**
+ * Represents a librarian that periodically updates overdue fines for books and CDs.
+ * <p>
+ * This class implements {@link Runnable} and can be run in a separate thread to
+ * automatically update fines daily.
+ * </p>
+ *
+ * @author Shatha_Dweikat
+ * @version 1.0
+ */
 public class Librarian implements Runnable {
     private final BookRepository bookRepo;
     private final CDRepository cdRepo;
@@ -30,7 +39,13 @@ public class Librarian implements Runnable {
             }
         }
     }
-
+    /**
+     * Updates overdue fines for all borrowed books and CDs.
+     * <p>
+     * For each overdue media, calculates the fine and adds it to the user's
+     * current fine balance.
+     * </p>
+     */
     public void updateOverdueFines() {
         // كتب متأخرة
         for (Book book : bookRepo.getAllBooks()) {

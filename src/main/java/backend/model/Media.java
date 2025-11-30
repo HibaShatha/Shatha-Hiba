@@ -27,7 +27,14 @@ public abstract class Media {
     public String borrowerUsername;
     protected FineStrategy fineStrategy;
 
-  
+    /**
+     * Constructs a Media object with the given details and fine strategy.
+     *
+     * @param title        the title of the media
+     * @param author       the author or creator of the media
+     * @param isbn         the ISBN identifier (null if not applicable)
+     * @param fineStrategy the fine calculation strategy for this media
+     */
     public Media(String title, String author, String isbn, FineStrategy fineStrategy) {
         this.title = title;
         this.author = author;
