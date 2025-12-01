@@ -27,5 +27,12 @@
     <version>3.1.5</version>
 </dependency>
 
+
 </dependencies>
+<properties>
+    <sonar.organization>hibashatha</sonar.organization>
+    <sonar.projectKey>hibashatha_Shatha-Hiba</sonar.projectKey>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+</properties>
+
 </project>
