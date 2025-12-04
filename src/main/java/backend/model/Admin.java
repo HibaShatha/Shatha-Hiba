@@ -26,7 +26,7 @@ public class Admin {
 	 this.password=password;
  }
  /**
-  * bb
+  * 
   * Gets the admin's username.
   *
   * @return the username
@@ -34,7 +34,7 @@ public class Admin {
   public String getUsername() {return username;}
   
   /**
-   * Gets the admin's password.
+   * Gets the admin's password .
    *
    * @return the password
    */
