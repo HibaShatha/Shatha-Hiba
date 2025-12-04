@@ -11,11 +11,11 @@ import backend.model.fine.FineStrategy;
  * </p>
  * 
  * <p>
- * Each subclass must implement borrowing logic, returning, overdue check,
+ * Each subclass must iplement borrowing logic, returning, overdue check,
  * and fine calculation according to its specific rules.
  * </p>
  *
- * @author Shatha_Dweikat
+ * @author Shatha_Dweikat 
  * @version 1.0.0
  */
 public abstract class Media {
