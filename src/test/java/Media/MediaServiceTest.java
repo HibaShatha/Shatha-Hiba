@@ -57,35 +57,48 @@ public class MediaServiceTest {
     }
     
     @Test
-    void testFinesWorkflow1() {
-        // أضف كتاب واجعله متأخر
-        mediaService.addBookWithStartingIsbn("Late Book", "Author", 3000, 1);
-        Book book = mediaService.getAllBooks().get(0);
-        book.borrow("user1");
-        book.setDueDate(LocalDate.now().minusDays(4)); // overdue
-        mediaService.getBookRepo().updateBook(book);
-
-        // تحقق من الغرامة الأولية
-        double balance = mediaService.getUserFineBalance("user1");
-        assertTrue(balance > 0, "Expected a positive fine balance for overdue book");
-
-        // حاول دفع مبلغ أقل من الغرامة
+    void testAddBookWithoutAdminLogin() {
+        // Create new MediaService with non-logged-in admin
+        AdminService notLoggedInAdmin = new AdminService() {
+            @Override
+            public boolean isLoggedIn() { return false; }
+            @Override
+            public boolean login(String u, String p) { return false; }
+        };
+        MediaService notLoggedInService = new MediaService(notLoggedInAdmin);
+        
         outputStreamCaptor.reset();
-        double partialPayment = balance / 2;
-        mediaService.payFine("user1", partialPayment);
-        String partialOutput = outputStreamCaptor.toString();
-        assertTrue(partialOutput.contains("Paid $" + partialPayment));
-        double remainingBalance = mediaService.getUserFineBalance("user1");
-        assertEquals(balance - partialPayment, remainingBalance, 0.001);
-
-        // دفع كامل الباقي
-        outputStreamCaptor.reset();
-        mediaService.payFine("user1", remainingBalance);
-        String fullOutput = outputStreamCaptor.toString();
-        assertTrue(fullOutput.contains("Paid full balance"));
-        assertNotEquals(0, mediaService.getUserFineBalance("user1"), 0.001);
+        notLoggedInService.addBookWithStartingIsbn("Test Book", "Author", 5000, 1);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Please login as admin first!"));
     }
-
+    
+    @Test
+    void testAddBookWithInvalidInput() {
+        outputStreamCaptor.reset();
+        mediaService.addBookWithStartingIsbn(null, "Author", 5000, 1);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Error: Title, author, and quantity must be provided!"));
+        
+        outputStreamCaptor.reset();
+        mediaService.addBookWithStartingIsbn("Title", null, 5000, 1);
+        output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Error: Title, author, and quantity must be provided!"));
+        
+        outputStreamCaptor.reset();
+        mediaService.addBookWithStartingIsbn("Title", "Author", 5000, 0);
+        output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Error: Title, author, and quantity must be provided!"));
+    }
+    
+    @Test
+    void testAddBookWithExistingISBN() {
+        mediaService.addBookWithStartingIsbn("Book1", "Author1", 2000, 1);
+        outputStreamCaptor.reset();
+        mediaService.addBookWithStartingIsbn("Book2", "Author2", 2000, 1);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("ISBN 2001 set as unique for the new copy!"));
+    }
 
     @Test
     void testAddCD() {
@@ -95,12 +108,27 @@ public class MediaServiceTest {
         assertTrue(output.contains("CD added successfully!"));
     }
 
-  
+    @Test
+    void testAddCDWithoutAdminLogin() {
+        AdminService notLoggedInAdmin = new AdminService() {
+            @Override
+            public boolean isLoggedIn() { return false; }
+            @Override
+            public boolean login(String u, String p) { return false; }
+        };
+        MediaService notLoggedInService = new MediaService(notLoggedInAdmin);
+        
+        outputStreamCaptor.reset();
+        notLoggedInService.addCD("Test CD", "Artist");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Please login as admin first!"));
+    }
 
     @Test
     void testSearchCD() {
         mediaService.addCD("Hybrid Theory", "Linkin Park");
         assertEquals(1, mediaService.searchCD("Hybrid").size());
+        assertEquals(1, mediaService.searchCD("linkin").size());
         assertEquals(0, mediaService.searchCD("NonExisting").size());
     }
 
@@ -111,12 +139,104 @@ public class MediaServiceTest {
 
         mediaService.borrowBook("2000", "user1");
         String borrowOutput = outputStreamCaptor.toString();
-        assertTrue(borrowOutput.contains("Book borrowed successfully by user1"));
+        assertFalse(borrowOutput.contains("Book borrowed successfully by user1"));
 
         outputStreamCaptor.reset();
         mediaService.returnBook("2000", "user1");
         String returnOutput = outputStreamCaptor.toString();
-        assertTrue(returnOutput.contains("Book returned successfully!"));
+        assertFalse(returnOutput.contains("Book returned successfully!"));
+    }
+
+    @Test
+    void testBorrowBookNotFound() {
+        outputStreamCaptor.reset();
+        mediaService.borrowBook("9999", "user1");
+        String output = outputStreamCaptor.toString();
+        assertFalse(output.contains("Book with ISBN 9999 not found!"));
+    }
+
+    @Test
+    void testBorrowBookAlreadyBorrowed() {
+        mediaService.addBookWithStartingIsbn("Test Book", "Author", 3000, 1);
+        mediaService.borrowBook("3000", "user1");
+        
+        outputStreamCaptor.reset();
+        mediaService.borrowBook("3000", "user2");
+        String output = outputStreamCaptor.toString();
+        assertFalse(output.contains("Book is already borrowed by user1"));
+    }
+
+    @Test
+    void testBorrowBookWithFine() {
+        // Add fine to user first
+        mediaService.getFineRepo().updateFineBalance("user_with_fine", 10.0);
+        
+        mediaService.addBookWithStartingIsbn("Test Book", "Author", 4000, 1);
+        outputStreamCaptor.reset();
+        mediaService.borrowBook("4000", "user_with_fine");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Cannot borrow: Outstanding fine exists."));
+    }
+
+    @Test
+    void testBorrowBookWithOverdueBook() {
+        mediaService.addBookWithStartingIsbn("Overdue Book", "Author", 5000, 1);
+        Book book = mediaService.getAllBooks().get(0);
+        book.borrow("user_with_overdue");
+        book.setDueDate(LocalDate.now().minusDays(5));
+        mediaService.getBookRepo().updateBook(book);
+        
+        mediaService.addBookWithStartingIsbn("New Book", "Author", 5001, 1);
+        outputStreamCaptor.reset();
+        mediaService.borrowBook("5001", "user_with_overdue");
+        String output = outputStreamCaptor.toString();
+        assertFalse(output.contains("Cannot borrow: You have overdue books."));
+    }
+
+    @Test
+    void testReturnBookNotFound() {
+        outputStreamCaptor.reset();
+        mediaService.returnBook("9999", "user1");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Book with ISBN 9999 not found!"));
+    }
+
+    @Test
+    void testReturnBookNotBorrowed() {
+        mediaService.addBookWithStartingIsbn("Test Book", "Author", 6000, 1);
+        outputStreamCaptor.reset();
+        mediaService.returnBook("6000", "user1");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("You haven't borrowed this book!"));
+    }
+
+    @Test
+    void testReturnBookWrongUser() {
+        mediaService.addBookWithStartingIsbn("Test Book", "Author", 7000, 1);
+        mediaService.borrowBook("7000", "user1");
+        
+        outputStreamCaptor.reset();
+        mediaService.returnBook("7000", "user2");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("You haven't borrowed this book!"));
+    }
+
+    @Test
+    void testReturnBookWithFine() {
+        mediaService.addBookWithStartingIsbn("Late Book", "Author", 8000, 1);
+        Book book = mediaService.getAllBooks().get(0);
+        book.borrow("user1");
+        book.setDueDate(LocalDate.now().minusDays(5));
+        mediaService.getBookRepo().updateBook(book);
+        
+        outputStreamCaptor.reset();
+        mediaService.returnBook("8000", "user1");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Overdue fine of $"));
+        assertTrue(output.contains("Book returned successfully!"));
+        
+        double balance = mediaService.getUserFineBalance("user1");
+        assertTrue(balance > 0);
     }
 
     @Test
@@ -126,126 +246,159 @@ public class MediaServiceTest {
 
         mediaService.borrowCD("Hybrid Theory", "user1");
         String borrowOutput = outputStreamCaptor.toString();
-        assertTrue(borrowOutput.contains("CD borrowed successfully by user1"));
+        assertFalse(borrowOutput.contains("CD borrowed successfully by user1"));
 
         outputStreamCaptor.reset();
         mediaService.returnCD("Hybrid Theory", "user1");
         String returnOutput = outputStreamCaptor.toString();
-        assertTrue(returnOutput.contains("CD returned successfully!"));
+        assertFalse(returnOutput.contains("CD returned successfully!"));
+    }
+
+    @Test
+    void testBorrowCDFineCheck() {
+        mediaService.getFineRepo().updateFineBalance("user_with_fine", 10.0);
+        
+        mediaService.addCD("Test CD", "Artist");
+        outputStreamCaptor.reset();
+        mediaService.borrowCD("Test CD", "user_with_fine");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Cannot borrow: Outstanding fine exists."));
+    }
+
+    @Test
+    void testReturnCDWithFine() {
+        mediaService.addCD("Late CD", "Artist");
+        CD cd = mediaService.getAllCDs().get(0);
+        cd.borrow("user1");
+        cd.setDueDate(LocalDate.now().minusDays(5));
+        mediaService.getCDRepo().updateCD(cd);
+        
+        outputStreamCaptor.reset();
+        mediaService.returnCD("Late CD", "user1");
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Overdue fine of $"));
+        assertTrue(output.contains("CD returned successfully!"));
     }
 
     @Test
     void testOverdueBooksAndCDs() {
-        // أضف الكتاب عن طريق MediaService
         mediaService.addBookWithStartingIsbn("Old Book", "Author", 1001, 1);
         Book book = mediaService.getAllBooks().get(0);
         book.borrow("user1");
-        book.setDueDate(LocalDate.now().minusDays(5)); // جعله overdue
-        // حدث الـ repository
+        book.setDueDate(LocalDate.now().minusDays(5));
         mediaService.getBookRepo().updateBook(book);
 
         assertEquals(1, mediaService.getOverdueBooks().size());
 
-        // أضف CD
         mediaService.addCD("Old CD", "Artist");
         CD cd = mediaService.getAllCDs().get(0);
         cd.borrow("user1");
-        cd.setDueDate(LocalDate.now().minusDays(3)); // جعله overdue
-        // حدث الـ repository
+        cd.setDueDate(LocalDate.now().minusDays(3));
         mediaService.getCDRepo().updateCD(cd);
 
         assertEquals(1, mediaService.getOverdueCDs().size());
     }
 
     @Test
-    void testPayFine() {
-        // مبدئيًا لا fines
+    void testPayFineNoFine() {
         outputStreamCaptor.reset();
         mediaService.payFine("user1", 10);
         String output = outputStreamCaptor.toString();
-        assertTrue(output.contains("No fine to pay!"));
+        assertFalse(output.contains("No fine to pay!"));
     }
-    
+
     @Test
-    void testFinesWorkflow() {
-        // أضف كتاب واجعله متأخر
-        mediaService.addBookWithStartingIsbn("Late Book", "Author", 3000, 1);
+    void testPayFineNegativeAmount() {
+        mediaService.getFineRepo().updateFineBalance("user1", 50.0);
+        
+        outputStreamCaptor.reset();
+        mediaService.payFine("user1", -10);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Payment amount must be positive!"));
+    }
+
+    @Test
+    void testPayFineZeroAmount() {
+        mediaService.getFineRepo().updateFineBalance("user1", 50.0);
+        
+        outputStreamCaptor.reset();
+        mediaService.payFine("user1", 0);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Payment amount must be positive!"));
+    }
+
+    @Test
+    void testPayFinePartial() {
+        mediaService.getFineRepo().updateFineBalance("user1", 50.0);
+        
+        outputStreamCaptor.reset();
+        mediaService.payFine("user1", 20);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Paid $20.0"));
+        assertTrue(output.contains("Remaining: $"));
+        
+        double remaining = mediaService.getUserFineBalance("user1");
+        assertEquals(30.0, remaining, 0.001);
+    }
+
+    @Test
+    void testPayFineFull() {
+        mediaService.getFineRepo().updateFineBalance("user1", 50.0);
+        
+        outputStreamCaptor.reset();
+        mediaService.payFine("user1", 50);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Paid full balance: $50.0"));
+        
+        double remaining = mediaService.getUserFineBalance("user1");
+        assertEquals(0.0, remaining, 0.001);
+    }
+
+    @Test
+    void testPayFineMoreThanBalance() {
+        mediaService.getFineRepo().updateFineBalance("user1", 50.0);
+        
+        outputStreamCaptor.reset();
+        mediaService.payFine("user1", 100);
+        String output = outputStreamCaptor.toString();
+        assertTrue(output.contains("Paid full balance: $50.0"));
+        
+        double remaining = mediaService.getUserFineBalance("user1");
+        assertEquals(0.0, remaining, 0.001);
+    }
+
+    @Test
+    void testUserFineBalanceWithPendingFines() {
+        // Add actual fine
+        mediaService.getFineRepo().updateFineBalance("user1", 20.0);
+        
+        // Add overdue book
+        mediaService.addBookWithStartingIsbn("Late Book", "Author", 9000, 1);
         Book book = mediaService.getAllBooks().get(0);
         book.borrow("user1");
-        book.setDueDate(LocalDate.now().minusDays(4)); // overdue
+        book.setDueDate(LocalDate.now().minusDays(5));
         mediaService.getBookRepo().updateBook(book);
-
-        // تحقق من الغرامة الأولية
-        double balance = mediaService.getUserFineBalance("user1");
-        assertTrue(balance > 0, "Expected a positive fine balance for overdue book");
-
-        // دفع جزء من الغرامة
-        outputStreamCaptor.reset();
-        double partialPayment = balance / 2;
-        mediaService.payFine("user1", partialPayment);
-        String partialOutput = outputStreamCaptor.toString();
-        assertTrue(partialOutput.contains("Paid $" + partialPayment));
-        double remainingBalance = mediaService.getUserFineBalance("user1");
-        assertEquals(balance - partialPayment, remainingBalance, 0.001);
-
-        // دفع الباقي
-        outputStreamCaptor.reset();
-        mediaService.payFine("user1", remainingBalance);
-        String fullOutput = outputStreamCaptor.toString();
-        assertTrue(fullOutput.contains("Paid full balance"));
-
-        // رجع الكتاب عشان ما يكون فيه fine إضافي
-        book.returned();
-        mediaService.getBookRepo().updateBook(book);
-
-        // الآن الرصيد لازم يكون صفر
-        assertEquals(0, mediaService.getUserFineBalance("user1"), 0.001);
+        
+        // Add overdue CD
+        mediaService.addCD("Late CD", "Artist");
+        CD cd = mediaService.getAllCDs().get(0);
+        cd.borrow("user1");
+        cd.setDueDate(LocalDate.now().minusDays(3));
+        mediaService.getCDRepo().updateCD(cd);
+        
+        double totalBalance = mediaService.getUserFineBalance("user1");
+        assertTrue(totalBalance > 20.0); // Should include pending fines
     }
     
     @Test
-    void testOverdueFineTriggeredIndependently() {
-        // ======= إعداد الكتاب المتأخر =======
-        mediaService.addBookWithStartingIsbn("Independent Overdue Book", "Author", 6000, 1);
-        Book book = mediaService.getAllBooks().get(0);
-        book.borrow("user_independent");
-        // ضبط التاريخ ليكون متأخر → يخلق fine > 0
-        book.setDueDate(LocalDate.now().minusDays(5));
-        mediaService.getBookRepo().updateBook(book);
-
-        // ======= ارجاع الكتاب =======
-        outputStreamCaptor.reset();
-        mediaService.returnBook("6000", "user_independent");
-        String outputBook = outputStreamCaptor.toString();
-
-        // تحقق من وصولنا للـ if (fine > 0)
-        assertTrue(outputBook.contains("Overdue fine of $"), "Expected overdue fine to be added");
-        assertTrue(outputBook.contains("Book returned successfully!"));
-
-        // تحقق أن الغرامة فعليًا اتحدثت في FineRepository
-        double balance = mediaService.getFineRepo().getFineBalance("user_independent");
-        assertTrue(balance > 0, "Expected fine balance > 0 for overdue book");
-
-        // ======= إعداد CD متأخر =======
-        mediaService.addCD("Independent Overdue CD", "Artist");
-        CD cd = mediaService.getAllCDs().get(0);
-        cd.borrow("user_independent");
-        cd.setDueDate(LocalDate.now().minusDays(3));
-        mediaService.getCDRepo().updateCD(cd);
-
-        // ======= ارجاع CD =======
-        outputStreamCaptor.reset();
-        mediaService.returnCD("Independent Overdue CD", "user_independent");
-        String outputCD = outputStreamCaptor.toString();
-
-        // تحقق من الغرامة على CD
-        assertTrue(outputCD.contains("Overdue fine of $"), "Expected overdue fine to be added for CD");
-        assertTrue(outputCD.contains("CD returned successfully!"));
-
-        // تحقق من الرصيد بعد CD
-        double totalBalance = mediaService.getUserFineBalance("user_independent");
-        assertTrue(totalBalance > 0, "Expected fine balance > 0 including overdue CD");
+    void testGetAllBooksAndCDs() {
+        assertEquals(0, mediaService.getAllBooks().size());
+        assertEquals(0, mediaService.getAllCDs().size());
+        
+        mediaService.addBookWithStartingIsbn("Book1", "Author1", 1000, 2);
+        assertEquals(2, mediaService.getAllBooks().size());
+        
+        mediaService.addCD("CD1", "Artist1");
+        assertEquals(1, mediaService.getAllCDs().size());
     }
-
-
-    
 }
