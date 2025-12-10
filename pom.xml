@@ -50,6 +50,41 @@
     </properties>
 
     <build>
+
+        <!-- ================= Added Plugins (Surefire + JaCoCo) ================= -->
+        <pluginManagement>
+            <plugins>
+
+                <!-- Needed to run JUnit 5 tests -->
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>2.22.2</version>
+                    <configuration></configuration>
+                </plugin>
+
+                <!-- Code Coverage with JaCoCo -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+
         <plugins>
 
             <plugin>
