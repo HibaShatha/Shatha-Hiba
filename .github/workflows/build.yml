@@ -1,4 +1,4 @@
-name: SonarQube
+name: SonarCloud Analysis
 
 on:
   push:
@@ -20,10 +20,10 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 25
+          java-version: 21
           distribution: 'temurin'
 
-      - name: Cache SonarQube packages
+      - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
           path: ~/.sonar/cache
@@ -37,7 +37,11 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and analyze
+      - name: Build and analyze with SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=HibaShatha_Shatha-Hiba
+        run: |
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+            -Dsonar.projectKey=HibaShatha_Shatha-Hiba \
+            -Dsonar.organization=HibaShatha \
+            -Dsonar.host.url=https://sonarcloud.io
