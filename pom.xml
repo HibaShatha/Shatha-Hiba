@@ -41,7 +41,7 @@
 
     <properties>
         <sonar.organization>hibashatha</sonar.organization>
-        <sonar.projectKey>hibashatha_Shatha-Hiba</sonar.projectKey>
+        <sonar.projectKey>HibaShatha_Shatha-Hiba</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
         <maven.compiler.source>21</maven.compiler.source>
