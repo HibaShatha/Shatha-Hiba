@@ -8,7 +8,7 @@
     <artifactId>library-management</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
-    <!-- ================= Dependencies ================= -->
+    <!-- ================ Dependencies ================= -->
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
