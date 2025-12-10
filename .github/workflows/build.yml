@@ -1,4 +1,4 @@
-name: SonarCloud Analysis
+name: SonarCloud
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: 21
+          java-version: 17
           distribution: 'temurin'
 
       - name: Cache SonarCloud packages
@@ -37,11 +37,9 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
 
-      - name: Build and analyze with SonarCloud
+      - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-            -Dsonar.projectKey=HibaShatha_Shatha-Hiba \
-            -Dsonar.organization=HibaShatha \
-            -Dsonar.host.url=https://sonarcloud.io
+        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          -Dsonar.organization=hibashatha \
+          -Dsonar.projectKey=hibashatha_library-management
