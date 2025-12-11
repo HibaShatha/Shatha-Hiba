@@ -24,10 +24,10 @@ public class Librarian implements Runnable {
         this.cdRepo = cdRepo;
         this.fineRepo = fineRepo;
     }
-    private volatile boolean running = true;
+
     @Override
     public void run() {
-        while (running) {
+        while (true) {
             // تحديث الغرامات لكل مستخدم
             updateOverdueFines();
             try {
