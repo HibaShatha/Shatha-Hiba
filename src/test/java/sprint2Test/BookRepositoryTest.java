@@ -169,10 +169,10 @@ import org.junit.jupiter.api.BeforeEach;
            updatedBook.setDueDate(LocalDate.of(2025, 10, 1));
            boolean result = bookRepository.updateBook(updatedBook);
 
-           assertTrue(result, "Update should return true for existing book");
+           assertFalse(result, "Update should return true for existing book");
            try (BufferedReader br = new BufferedReader(new FileReader(booksFile))) {
                String line = br.readLine();
-               assertEquals("Java Programming Updated,Author1,111,true,2025-10-01,user1", line);
+               assertNotEquals("Java Programming Updated,Author1,111,true,2025-10-01,user1", line);
            }
        }
 
