@@ -121,4 +121,19 @@ class BookRepositoryTest {
             assertEquals("Java Programming,Author1,111,false,,", line);
         }
     }
+    
+    @Test
+    void testGetAllBooksIOException() throws IOException {
+        File unreadableFile = new File(tempDir, "bad.csv");
+        unreadableFile.createNewFile();
+        unreadableFile.setReadable(false); // يمنع القراءة
+
+        BookRepository badRepo = new BookRepository(unreadableFile.getAbsolutePath());
+
+        List<Book> books = badRepo.getAllBooks();
+
+        // بما إن القراءة فشلت، المتوقّع يرجع ليست فاضية
+        assertTrue(books.isEmpty());
+    }
+
 }
