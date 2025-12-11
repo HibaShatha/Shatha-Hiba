@@ -123,16 +123,15 @@ public class UserRepository {
      * @return true if the user was found and removed; false otherwise
      */
     public boolean removeUser(String username) {
-        try {
-            File inputFile = new File(FILE_PATH);
-            File tempFile = new File("files/temp_users.csv");
+        File inputFile = new File(FILE_PATH);
+        File tempFile = new File("files/temp_users.csv");
+        boolean found = false;
 
+        try (
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
+        ) {
             String line;
-            boolean found = false;
-
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",", -1);
                 if (!parts[0].equals(username)) {
@@ -142,16 +141,18 @@ public class UserRepository {
                     found = true;
                 }
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
 
-            reader.close();
-            writer.close();
+        // بعد الانتهاء من الكتابة، حذف الملف القديم وإعادة تسمية الملف المؤقت
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            System.out.println("Error deleting user from file");
+            return false;
+        }
 
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Error deleting user from file");
-                return false;
-            }
-
-            return found;
-        } catch (IOException e) { e.printStackTrace(); return false; }
+        return found;
     }
+
 }

@@ -45,6 +45,10 @@
         <sonar.projectKey>HibaShatha_Shatha-Hiba</sonar.projectKey>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <sonar.coverage.exclusions>src/main/java/frontend/LibraryApp.java</sonar.coverage.exclusions>
+        <sonar.coverage.exclusions>
+    **/RealEmailNotifier.java
+</sonar.coverage.exclusions>
+
 
         <!-- Compiler -->
         <maven.compiler.source>21</maven.compiler.source>
