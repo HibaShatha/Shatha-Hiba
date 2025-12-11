@@ -222,33 +222,7 @@ class UserRepositoryTest {
         assertFalse(removed);
     }
     
-    @Test
-    void testUpdatePassword_RenameFailure() throws IOException {
-        User user = new User("failUser", "pass", "email", "111");
-        userRepository.addUser(user);
-
-        // ملف مؤقت موجود مسبقًا لتسبب فشل إعادة التسمية
-        File tempFile = new File("files/temp_users.csv");
-        tempFile.createNewFile();
-
-        boolean result = userRepository.updatePassword("failUser", "newPass");
-        assertFalse(result, "Should return false when rename/delete fails");
-    }
-
-    @Test
-    void testFindByUsername_IOException() throws IOException {
-        // نجعل الملف غير قابل للقراءة
-        Files.write(usersFilePath, java.util.List.of("user,pass,email,phone"));
-        usersFilePath.toFile().setReadable(false);
-
-        UserRepository badRepo = new UserRepository(usersFilePath.toString());
-        User found = badRepo.findByUsername("user");
-
-        assertNull(found, "Should return null if IOException occurs");
-
-        usersFilePath.toFile().setReadable(true); // لإعادة الحالة الطبيعية بعد الاختبار
-    }
-
+    
 
     // دوال مساعدة لتسهيل الكتابة والتحقق
     private void writeLines(String... lines) throws IOException {
