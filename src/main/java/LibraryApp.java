@@ -45,7 +45,8 @@ public class LibraryApp {
         AdminService adminService = new AdminService();
         UserService userService = new UserService();
         MediaService mediaService = new MediaService(adminService);
-        while (true) {
+        boolean isRunning = true;
+        while (isRunning) {
             System.out.println("\n=== Main Menu ===");
             System.out.println("1- Login");
             System.out.println("2- Create Account");
@@ -66,7 +67,8 @@ public class LibraryApp {
                     forgotPasswordMenu(scanner, adminService, userService);
                     break;
                 case 4:
-                    System.exit(0);
+                  
+                    isRunning = false;
                     break;
                 default:
                     System.out.println("Invalid option!");
