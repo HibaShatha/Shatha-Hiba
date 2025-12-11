@@ -210,100 +210,99 @@ public class LibraryApp {
             scanner.nextLine();
 
             switch (option) {
-                case 1:
-                    System.out.print("Book Title: "); 
-                    String title = scanner.nextLine();
-                    System.out.print("Author: "); 
-                    String author = scanner.nextLine();
-                    System.out.print("Starting ISBN: "); 
-                    int startIsbn = Integer.parseInt(scanner.nextLine());
-                    System.out.print("Quantity: "); 
-                    int qty = Integer.parseInt(scanner.nextLine());
-                    mediaService.addBookWithStartingIsbn(title, author, startIsbn, qty);
-                    break;
-                case 2:
-                    System.out.print("CD Title: "); 
-                    String cdTitle = scanner.nextLine();
-                    System.out.print("Artist: "); 
-                    String artist = scanner.nextLine();
-                    mediaService.addCD(cdTitle, artist);
-                    break;
-                case 3:
-                    System.out.print("Search Book or CD (enter 'book' or 'cd'): "); 
-                    String type = scanner.nextLine().toLowerCase();
-
-                    if (type.equals("book")) {
-                        System.out.print("Search by (title/author/isbn): ");
-                        String mode = scanner.nextLine().toLowerCase();
-
-                        System.out.print("Enter keyword: ");
-                        String keyword = scanner.nextLine();
-
-                        // اختيار الاستراتيجية حسب اختيار المستخدم
-                        SearchStrategy strategy = null;
-                        switch (mode) {
-                            case "title":
-                                strategy = new TitleSearchStrategy();
-                                break;
-                            case "author":
-                                strategy = new AuthorSearchStrategy();
-                                break;
-                            case "isbn":
-                                strategy = new IsbnSearchStrategy();
-                                break;
-                            default:
-                                System.out.println("Invalid search type!");
-                                break;
-                        }
-
-                        // إنشاء الـ context وتنفيذ البحث
-                        Search searchContext = new Search(strategy);
-                        List<Book> results = mediaService.searchBooks(searchContext, keyword);
-
-                        if (results.isEmpty()) System.out.println("No books found!");
-                        else for (Book b : results) System.out.println(formatMediaInfo(b));
-
-                    } else if (type.equals("cd")) {
-                        System.out.print("Enter keyword: ");
-                        String keyword = scanner.nextLine();
-
-                        List<CD> cds = mediaService.searchCD(keyword);
-                        if (cds.isEmpty()) System.out.println("No CDs found!");
-                        else for (CD c : cds) System.out.println(formatMediaInfo(c));
-
-                    } else {
-                        System.out.println("Invalid type!");
-                    }
-                    break;
-
-
-                case 4:
-                    for (Book b : mediaService.getAllBooks()) System.out.println(formatMediaInfo(b));
-                    break;
-                case 5:
-                    for (CD c : mediaService.getAllCDs()) System.out.println(formatMediaInfo(c));
-                    break;
-                case 6:
-                    for (Book b : mediaService.getOverdueBooks()) System.out.println(formatMediaInfo(b));
-                    for (CD c : mediaService.getOverdueCDs()) System.out.println(formatMediaInfo(c));
-                    break;
-                case 7:
-                    reminderService.sendReminders();
-                    break;
-                case 8:
-                    System.out.print("Enter username to unregister: ");
-                    String username = scanner.nextLine();
-                    adminService.unregisterUser(username, new UserRepository(), mediaService);
-                    break;
-                case 9:
-                    adminService.logout();
-                    break;
-                default:
-                    System.out.println("Invalid option!");
-                    break;
+                case 1 -> addBookOption(scanner, mediaService);
+                case 2 -> addCDOption(scanner, mediaService);
+                case 3 -> searchMediaOption(scanner, mediaService);
+                case 4 -> showAllBooks(mediaService);
+                case 5 -> showAllCDs(mediaService);
+                case 6 -> showOverdueMedia(mediaService);
+                case 7 -> reminderService.sendReminders();
+                case 8 -> unregisterUserOption(scanner, adminService, mediaService);
+                case 9 -> adminService.logout();
+                default -> System.out.println("Invalid option!");
             }
         }
     }
+
+    // كل خيار Method منفصل ↓
+
+    private static void addBookOption(Scanner scanner, MediaService mediaService) {
+        System.out.print("Book Title: "); 
+        String title = scanner.nextLine();
+        System.out.print("Author: "); 
+        String author = scanner.nextLine();
+        System.out.print("Starting ISBN: "); 
+        int startIsbn = Integer.parseInt(scanner.nextLine());
+        System.out.print("Quantity: "); 
+        int qty = Integer.parseInt(scanner.nextLine());
+        mediaService.addBookWithStartingIsbn(title, author, startIsbn, qty);
+    }
+
+    private static void addCDOption(Scanner scanner, MediaService mediaService) {
+        System.out.print("CD Title: "); 
+        String cdTitle = scanner.nextLine();
+        System.out.print("Artist: "); 
+        String artist = scanner.nextLine();
+        mediaService.addCD(cdTitle, artist);
+    }
+
+    private static void searchMediaOption(Scanner scanner, MediaService mediaService) {
+        System.out.print("Search Book or CD (enter 'book' or 'cd'): "); 
+        String type = scanner.nextLine().toLowerCase();
+
+        if (type.equals("book")) searchBookOption(scanner, mediaService);
+        else if (type.equals("cd")) searchCDOption(scanner, mediaService);
+        else System.out.println("Invalid type!");
+    }
+
+    private static void searchBookOption(Scanner scanner, MediaService mediaService) {
+        System.out.print("Search by (title/author/isbn): ");
+        String mode = scanner.nextLine().toLowerCase();
+        System.out.print("Enter keyword: ");
+        String keyword = scanner.nextLine();
+
+        SearchStrategy strategy = switch (mode) {
+            case "title" -> new TitleSearchStrategy();
+            case "author" -> new AuthorSearchStrategy();
+            case "isbn" -> new IsbnSearchStrategy();
+            default -> null;
+        };
+
+        if (strategy != null) {
+            Search searchContext = new Search(strategy);
+            List<Book> results = mediaService.searchBooks(searchContext, keyword);
+            if (results.isEmpty()) System.out.println("No books found!");
+            else results.forEach(b -> System.out.println(formatMediaInfo(b)));
+        } else System.out.println("Invalid search type!");
+    }
+
+    private static void searchCDOption(Scanner scanner, MediaService mediaService) {
+        System.out.print("Enter keyword: ");
+        String keyword = scanner.nextLine();
+        List<CD> cds = mediaService.searchCD(keyword);
+        if (cds.isEmpty()) System.out.println("No CDs found!");
+        else cds.forEach(c -> System.out.println(formatMediaInfo(c)));
+    }
+
+    private static void showAllBooks(MediaService mediaService) {
+        mediaService.getAllBooks().forEach(b -> System.out.println(formatMediaInfo(b)));
+    }
+
+    private static void showAllCDs(MediaService mediaService) {
+        mediaService.getAllCDs().forEach(c -> System.out.println(formatMediaInfo(c)));
+    }
+
+    private static void showOverdueMedia(MediaService mediaService) {
+        mediaService.getOverdueBooks().forEach(b -> System.out.println(formatMediaInfo(b)));
+        mediaService.getOverdueCDs().forEach(c -> System.out.println(formatMediaInfo(c)));
+    }
+
+    private static void unregisterUserOption(Scanner scanner, AdminService adminService, MediaService mediaService) {
+        System.out.print("Enter username to unregister: ");
+        String username = scanner.nextLine();
+        adminService.unregisterUser(username, new UserRepository(), mediaService);
+    }
+
 
     private static void userMenu(Scanner scanner, UserService userService, MediaService mediaService) {
         EmailService emailService = new EmailService();
