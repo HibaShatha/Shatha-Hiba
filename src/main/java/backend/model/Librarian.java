@@ -39,9 +39,6 @@ public class Librarian implements Runnable {
             }
         }
     }
-    public void stop() {
-        running = false;
-    }
     /**
      * Updates overdue fines for all borrowed books and CDs.
      * <p>
