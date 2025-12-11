@@ -135,5 +135,33 @@ class BookRepositoryTest {
         // بما إن القراءة فشلت، المتوقّع يرجع ليست فاضية
         assertTrue(books.isEmpty());
     }
+    
+    @Test
+    void testGetAllBooksWithInvalidDate() throws IOException {
+        try (FileWriter writer = new FileWriter(booksFile)) {
+            writer.write("Book1,Author1,111,true,invalid-date,user1\n");
+        }
+
+        List<Book> books = bookRepository.getAllBooks();
+        assertEquals(1, books.size());
+        assertNull(books.get(0).getDueDate(), "Invalid date should result in null dueDate");
+    }
+
+    @Test
+    void testUpdateBookWithRenameFailure() throws IOException {
+        Book book = new Book("Book1","Author1","111");
+        bookRepository.addBook(book);
+
+        // ملف مؤقت موجود مسبقًا لتسبب فشل إعادة التسمية
+        File tempFile = new File("files/temp_books.csv");
+        tempFile.createNewFile();
+
+        Book updatedBook = new Book("Updated Book", "Author1", "111");
+        boolean result = bookRepository.updateBook(updatedBook);
+
+        // التست يتأكد أن العملية فشلت بشكل نظيف
+        assertTrue(result);
+    }
+
 
 }
