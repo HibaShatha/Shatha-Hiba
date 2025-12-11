@@ -222,10 +222,23 @@ class UserRepositoryTest {
         assertFalse(removed);
     }
     
-    
+ // لا حاجة لتغيير شيء إلا إذا أردنا إضافة اختبار للـ formatUser helper
+    @Test
+    void testAddUser_UsesFormatUser() throws IOException {
+        User user = new User("formatTest", "pass123", "f@example.com", "0999");
+        userRepository.addUser(user);
+
+        assertLinesMatch(
+            java.util.List.of("formatTest,pass123,f@example.com,0999"),
+            Files.readAllLines(usersFilePath)
+        );
+    }
+
 
     // دوال مساعدة لتسهيل الكتابة والتحقق
     private void writeLines(String... lines) throws IOException {
         Files.write(usersFilePath, java.util.List.of(lines));
     }
+    
+    
 }

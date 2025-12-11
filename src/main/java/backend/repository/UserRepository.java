@@ -16,21 +16,15 @@ import backend.model.User;
  * @author Hiba_ibraheem
  * @version 1.2.0
  */
-public class UserRepository {
 
-    /** Path to the CSV file storing user data */
+
+public class UserRepository {
     private final String FILE_PATH;
 
-    /** Default constructor using "users.csv" */
     public UserRepository() {
         this("files/users.csv");
     }
 
-    /**
-     * Constructor with custom file path.
-     *
-     * @param filePath path to the CSV file
-     */
     public UserRepository(String filePath) {
         this.FILE_PATH = filePath;
         File file = new File(FILE_PATH);
@@ -39,90 +33,51 @@ public class UserRepository {
         }
     }
 
-    /** Returns the file path used by this repository */
     public String getFilePath() {
         return FILE_PATH;
     }
 
-    /** Adds a new user to the CSV file */
     public void addUser(User user) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH, true))) {
-            bw.write(user.getUsername() + "," + user.getPassword() + "," + user.getEmail() + "," + user.getPhoneNumber());
+            bw.write(formatUser(user));
             bw.newLine();
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username the username to search for
-     * @return the User object if found; null otherwise
-     */
     public User findByUsername(String username) {
         try (BufferedReader br = new BufferedReader(new FileReader(FILE_PATH))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",", -1);
                 if (parts.length >= 4 && parts[0].equals(username)) {
-                    String email = parts.length > 2 ? parts[2] : "";
-                    String phoneNumber = parts.length > 3 ? parts[3] : "";
-                    return new User(parts[0], parts[1], email, phoneNumber);
+                    return new User(parts[0], parts[1], parts[2], parts[3]);
                 }
             }
-        } catch (IOException e) { e.printStackTrace(); }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return null;
     }
 
-    /**
-     * Updates the password for a specific user.
-     *
-     * @param username    the username to update
-     * @param newPassword the new password
-     * @return true if the user was found and updated; false otherwise
-     */
     public boolean updatePassword(String username, String newPassword) {
-        try {
-            File inputFile = new File(FILE_PATH);
-            File tempFile = new File("files/temp_users.csv");
+        return modifyFile(username, newPassword, false);
+    }
 
-            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
-            String line;
-            boolean found = false;
-
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",", -1);
-                String email = parts.length > 2 ? parts[2] : "";
-                String phoneNumber = parts.length > 3 ? parts[3] : "";
-                if (parts[0].equals(username)) {
-                    writer.write(username + "," + newPassword + "," + email + "," + phoneNumber);
-                    found = true;
-                } else {
-                    writer.write(line);
-                }
-                writer.newLine();
-            }
-
-            reader.close();
-            writer.close();
-
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Error updating password file");
-                return false;
-            }
-
-            return found;
-        } catch (IOException e) { e.printStackTrace(); return false; }
+    public boolean removeUser(String username) {
+        return modifyFile(username, null, true);
     }
 
     /**
-     * Removes a user from the CSV file.
+     * General method to update password or remove user.
      *
-     * @param username the username to remove
-     * @return true if the user was found and removed; false otherwise
+     * @param username    username to find
+     * @param newPassword new password if updating, null if removing
+     * @param remove      true if removing user, false if updating
+     * @return true if operation succeeded
      */
-    public boolean removeUser(String username) {
+    private boolean modifyFile(String username, String newPassword, boolean remove) {
         File inputFile = new File(FILE_PATH);
         File tempFile = new File("files/temp_users.csv");
         boolean found = false;
@@ -134,11 +89,17 @@ public class UserRepository {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",", -1);
-                if (!parts[0].equals(username)) {
+                if (parts[0].equals(username)) {
+                    found = true;
+                    if (!remove) {
+                        // update password
+                        writer.write(parts[0] + "," + newPassword + "," + parts[2] + "," + parts[3]);
+                        writer.newLine();
+                    }
+                    // if remove, skip writing line
+                } else {
                     writer.write(line);
                     writer.newLine();
-                } else {
-                    found = true;
                 }
             }
         } catch (IOException e) {
@@ -146,13 +107,16 @@ public class UserRepository {
             return false;
         }
 
-        // بعد الانتهاء من الكتابة، حذف الملف القديم وإعادة تسمية الملف المؤقت
         if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-            System.out.println("Error deleting user from file");
+            System.out.println(remove ? "Error deleting user from file" : "Error updating password file");
             return false;
         }
 
         return found;
     }
 
+    /** Helper to format a user as CSV line */
+    private String formatUser(User user) {
+        return String.join(",", user.getUsername(), user.getPassword(), user.getEmail(), user.getPhoneNumber());
+    }
 }
