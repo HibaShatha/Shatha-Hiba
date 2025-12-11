@@ -87,4 +87,29 @@ class LibrarianTest {
         assertTrue(user2New > 2.0); // cd1 متأخر
         assertEquals(0.0, user3New); // cd2 ليس متأخر
     }
+    
+    @Test
+    void testStopMethodStopsLoop() {
+        FakeBookRepo bookRepo = new FakeBookRepo();
+        FakeCDRepo cdRepo = new FakeCDRepo();
+        FakeFineRepo fineRepo = new FakeFineRepo();
+
+        Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
+
+        Thread t = new Thread(librarian);
+        t.start();
+
+        // نوقف الخيط
+        librarian.stop();
+
+        try {
+            t.join(200); // نعطي الخيط وقت بسيط ينهي نفسه
+        } catch (InterruptedException e) {
+            fail("Thread should not be interrupted");
+        }
+
+        // إذا الخيط مات → يعني stop شغال
+        assertFalse(t.isAlive());
+    }
+
 }
