@@ -111,7 +111,7 @@ class LibrarianTest {
         thread.start();
 
         // نترك thread يعمل قليلاً
-        Thread.sleep(50);
+        Thread.sleep(1);
 
         librarian.stop();
         thread.join();
