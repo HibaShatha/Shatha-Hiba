@@ -24,10 +24,10 @@ public class Librarian implements Runnable {
         this.cdRepo = cdRepo;
         this.fineRepo = fineRepo;
     }
-
+    private volatile boolean running = true;
     @Override
     public void run() {
-        while (true) {
+        while (running) {
             // تحديث الغرامات لكل مستخدم
             updateOverdueFines();
             try {
@@ -38,6 +38,9 @@ public class Librarian implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+    public void stop() {
+        running = false;
     }
     /**
      * Updates overdue fines for all borrowed books and CDs.
