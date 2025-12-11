@@ -111,18 +111,18 @@ public class BookRepository {
      * @return true if the book was found and updated; false otherwise
      */
     public boolean updateBook(Book book) {
-        File inputFile = new File(FILE_PATH);
-        File tempFile = new File("files/temp_books.csv");
+        try {
+            File inputFile = new File(FILE_PATH);
+            File tempFile = new File("files/temp_books.csv");
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
 
             String line;
             boolean found = false;
 
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",", -1);
-
                 if (parts.length >= 3 && parts[2].equals(book.getIsbn())) {
                     String dueDateStr = book.getDueDate() != null ? book.getDueDate().toString() : "";
                     String borrowerUsername = book.getBorrowerUsername() != null ? book.getBorrowerUsername() : "";
@@ -135,18 +135,15 @@ public class BookRepository {
                 writer.newLine();
             }
 
-            // بعد انتهاء الكتابة، حذف الملف القديم وإعادة تسمية الملف المؤقت
+            reader.close();
+            writer.close();
+
             if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
                 System.out.println("Error updating book file");
                 return false;
             }
 
             return found;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
+        } catch (IOException e) { e.printStackTrace(); return false; }
     }
-
 }
