@@ -18,6 +18,7 @@ public class Librarian implements Runnable {
     private final BookRepository bookRepo;
     private final CDRepository cdRepo;
     private final FineRepository fineRepo;
+    private volatile boolean running = true; // end condition
 
     public Librarian(BookRepository bookRepo, CDRepository cdRepo, FineRepository fineRepo) {
         this.bookRepo = bookRepo;
@@ -27,27 +28,24 @@ public class Librarian implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            // تحديث الغرامات لكل مستخدم
-            updateOverdueFines();
+        while (running) { // بدل while(true)
+            updateOverdueFinesSafely(); // Extract Method مع try-catch
             try {
-            	 
-               Thread.sleep(24 * 60 * 60 * 1000); // 
-            	
+                Thread.sleep(24 * 60 * 60 * 1000); // نوم يوم كامل
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                Thread.currentThread().interrupt(); // إعادة مقاطعة الـThread
+                System.out.println("Librarian thread interrupted, stopping.");
+                running = false; // وقف الحلقة عند المقاطعة
             }
         }
     }
-    /**
-     * Updates overdue fines for all borrowed books and CDs.
-     * <p>
-     * For each overdue media, calculates the fine and adds it to the user's
-     * current fine balance.
-     * </p>
-     */
+
+    private void updateOverdueFinesSafely() {
+        // Extracted method يحوي try-catch داخلي إذا احتجنا
+        updateOverdueFines();
+    }
+
     public void updateOverdueFines() {
-        // كتب متأخرة
         for (Book book : bookRepo.getAllBooks()) {
             if (book.isOverdue()) {
                 double fine = book.calculateFine();
@@ -56,7 +54,6 @@ public class Librarian implements Runnable {
             }
         }
 
-        // CDs متأخرة
         for (CD cd : cdRepo.getAllCDs()) {
             if (cd.isOverdue()) {
                 double fine = cd.calculateFine();
@@ -64,5 +61,10 @@ public class Librarian implements Runnable {
                 fineRepo.updateFineBalance(cd.getBorrowerUsername(), currentBalance + fine);
             }
         }
+    }
+
+    // طريقة لإيقاف الخيط من خارج الكلاس
+    public void stop() {
+        running = false;
     }
 }
