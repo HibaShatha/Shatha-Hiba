@@ -28,20 +28,19 @@ public class Librarian implements Runnable {
 
     @Override
     public void run() {
-        while (running) { // بدل while(true)
-            updateOverdueFinesSafely(); // Extract Method مع try-catch
+        while (running) { 
+            updateOverdueFinesSafely(); 
             try {
-                Thread.sleep(24 * 60 * 60 * 1000); // نوم يوم كامل
+                Thread.sleep(24 * 60 * 60 * 1000); 
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt(); // إعادة مقاطعة الـThread
+                Thread.currentThread().interrupt();
                 System.out.println("Librarian thread interrupted, stopping.");
-                running = false; // وقف الحلقة عند المقاطعة
+                running = false; 
             }
         }
     }
 
     private void updateOverdueFinesSafely() {
-        // Extracted method يحوي try-catch داخلي إذا احتجنا
         updateOverdueFines();
     }
 
