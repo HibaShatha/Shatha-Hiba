@@ -118,5 +118,50 @@ class LibrarianTest {
 
         assertFalse(thread.isAlive());
     }
+    
+    @Test
+    void testRunDailyFineUpdateMethodDirectly() {
+        // Fake Repositories
+        FakeBookRepo bookRepo = new FakeBookRepo();
+        FakeCDRepo cdRepo = new FakeCDRepo();
+        FakeFineRepo fineRepo = new FakeFineRepo();
+
+        // إضافة كتب/CDs متأخرة وغير متأخرة
+        Book overdueBook = new Book("Java", "Schildt", "111");
+        overdueBook.borrow("user1");
+        overdueBook.dueDate = LocalDate.now().minusDays(5);
+
+        CD overdueCD = new CD("Metallica", "Metallica");
+        overdueCD.borrow("user2");
+        overdueCD.dueDate = LocalDate.now().minusDays(3);
+
+        Book onTimeBook = new Book("Python", "Lutz", "222");
+        onTimeBook.borrow("user3");
+        onTimeBook.dueDate = LocalDate.now().plusDays(2);
+
+        CD onTimeCD = new CD("Linkin Park", "LP");
+        onTimeCD.borrow("user4");
+        onTimeCD.dueDate = LocalDate.now().plusDays(1);
+
+        bookRepo.books.addAll(Arrays.asList(overdueBook, onTimeBook));
+        cdRepo.cds.addAll(Arrays.asList(overdueCD, onTimeCD));
+
+        fineRepo.balance.put("user1", 0.0);
+        fineRepo.balance.put("user2", 0.0);
+        fineRepo.balance.put("user3", 0.0);
+        fineRepo.balance.put("user4", 0.0);
+
+        Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
+
+        // استدعاء الميثود مباشرة بدون Thread
+        librarian.runDailyFineUpdateIterationForTest();
+
+        // Assertions
+        assertTrue(fineRepo.getFineBalance("user1") > 0.0);
+        assertTrue(fineRepo.getFineBalance("user2") > 0.0);
+        assertEquals(0.0, fineRepo.getFineBalance("user3"));
+        assertEquals(0.0, fineRepo.getFineBalance("user4"));
+    }
+
 
 }
