@@ -111,15 +111,15 @@ public class BookRepository {
      * @return true if the book was found and updated; false otherwise
      */
     public boolean updateBook(Book book) {
-        try {
-            File inputFile = new File(FILE_PATH);
-            File tempFile = new File("files/temp_books.csv");
+        File inputFile = new File(FILE_PATH);
+        File tempFile = new File("files/temp_books.csv");
+        boolean found = false;
 
+        try (
             BufferedReader reader = new BufferedReader(new FileReader(inputFile));
-            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
-
+            BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))
+        ) {
             String line;
-            boolean found = false;
 
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(",", -1);
@@ -135,15 +135,18 @@ public class BookRepository {
                 writer.newLine();
             }
 
-            reader.close();
-            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
 
-            if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
-                System.out.println("Error updating book file");
-                return false;
-            }
+        // حذف الملف القديم وإعادة تسمية الملف المؤقت
+        if (!inputFile.delete() || !tempFile.renameTo(inputFile)) {
+            System.out.println("Error updating book file");
+            return false;
+        }
 
-            return found;
-        } catch (IOException e) { e.printStackTrace(); return false; }
+        return found;
     }
+
 }
