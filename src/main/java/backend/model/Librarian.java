@@ -64,9 +64,6 @@ public class Librarian implements Runnable {
         }
     }
     
- // فقط للتيست
-    public void runDailyFineUpdateIterationForTest() {
-        updateOverdueFines();
-    }
+
 
 }
