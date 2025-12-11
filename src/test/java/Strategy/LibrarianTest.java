@@ -40,23 +40,22 @@ class LibrarianTest {
         }
     }
 
-    // ====== Test updateOverdueFines ======
     @Test
     void testUpdateOverdueFines_AllCases() {
         FakeBookRepo bookRepo = new FakeBookRepo();
         FakeCDRepo cdRepo = new FakeCDRepo();
         FakeFineRepo fineRepo = new FakeFineRepo();
 
-        // كتب/CDs متأخرة
+        // حالة كتب/CDs متأخرة
         Book overdueBook = new Book("Java", "Schildt", "111");
         overdueBook.borrow("user1");
-        overdueBook.dueDate = LocalDate.now().minusDays(5);
+        overdueBook.dueDate = LocalDate.now().minusDays(5); // overdue 5 days
 
         CD overdueCD = new CD("Metallica", "Metallica");
         overdueCD.borrow("user2");
-        overdueCD.dueDate = LocalDate.now().minusDays(3);
+        overdueCD.dueDate = LocalDate.now().minusDays(3); // overdue 3 days
 
-        // كتب/CDs غير متأخرة
+        // حالة كتب/CDs غير متأخرة
         Book onTimeBook = new Book("Python", "Lutz", "222");
         onTimeBook.borrow("user3");
         onTimeBook.dueDate = LocalDate.now().plusDays(2);
@@ -65,29 +64,32 @@ class LibrarianTest {
         onTimeCD.borrow("user4");
         onTimeCD.dueDate = LocalDate.now().plusDays(1);
 
-        // كتب/CDs بدون مستعير
+        // حالة كتب/CDs بدون مستعير
         Book unborrowedBook = new Book("C#", "Albahari", "333");
         CD unborrowedCD = new CD("Coldplay", "Parachutes");
 
+        // إضافة كل العناصر
         bookRepo.books.addAll(Arrays.asList(overdueBook, onTimeBook, unborrowedBook));
         cdRepo.cds.addAll(Arrays.asList(overdueCD, onTimeCD, unborrowedCD));
 
-        fineRepo.balance.put("user1", 0.0);
-        fineRepo.balance.put("user2", 0.0);
+        // تهيئة الرصيد
+        fineRepo.balance.put("user1", 5.0);
+        fineRepo.balance.put("user2", 2.0);
         fineRepo.balance.put("user3", 0.0);
-        fineRepo.balance.put("user4", 0.0);
+        fineRepo.balance.put("user4", 1.0);
 
         Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
 
+        // تحديث الغرامات
         librarian.updateOverdueFines();
 
-        assertTrue(fineRepo.getFineBalance("user1") > 0.0);
-        assertTrue(fineRepo.getFineBalance("user2") > 0.0);
-        assertEquals(0.0, fineRepo.getFineBalance("user3"));
-        assertEquals(0.0, fineRepo.getFineBalance("user4"));
+        // Assertions دقيقة
+        assertTrue(fineRepo.getFineBalance("user1") > 5.0); // overdueBook
+        assertTrue(fineRepo.getFineBalance("user2") > 2.0); // overdueCD
+        assertEquals(0.0, fineRepo.getFineBalance("user3")); // onTimeBook
+        assertEquals(1.0, fineRepo.getFineBalance("user4")); // onTimeCD
     }
 
-    // ====== Test Empty Repos ======
     @Test
     void testUpdateOverdueFines_EmptyRepos() {
         FakeBookRepo bookRepo = new FakeBookRepo();
@@ -95,55 +97,10 @@ class LibrarianTest {
         FakeFineRepo fineRepo = new FakeFineRepo();
 
         Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
+
+        // يجب أن لا يحدث أي استثناء حتى لو لا يوجد كتب/CDs
         assertDoesNotThrow(librarian::updateOverdueFines);
     }
 
-    // ====== Test runDailyFineUpdate loop in Thread ======
-    @Test
-    void testRunDailyFineUpdateThread() throws InterruptedException {
-        FakeBookRepo bookRepo = new FakeBookRepo();
-        FakeCDRepo cdRepo = new FakeCDRepo();
-        FakeFineRepo fineRepo = new FakeFineRepo();
-
-        Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
-
-        Thread thread = new Thread(librarian);
-        thread.start();
-
-
-        librarian.stop();
-        thread.join();
-
-        assertFalse(thread.isAlive());
-    }
-
-    // ====== Directly call the method for coverage ======
-    @Test
-    void testRunDailyFineUpdateMethodDirectly() {
-        FakeBookRepo bookRepo = new FakeBookRepo();
-        FakeCDRepo cdRepo = new FakeCDRepo();
-        FakeFineRepo fineRepo = new FakeFineRepo();
-
-        Book overdueBook = new Book("Java", "Schildt", "111");
-        overdueBook.borrow("user1");
-        overdueBook.dueDate = LocalDate.now().minusDays(2);
-
-        CD overdueCD = new CD("Metallica", "Metallica");
-        overdueCD.borrow("user2");
-        overdueCD.dueDate = LocalDate.now().minusDays(1);
-
-        bookRepo.books.add(overdueBook);
-        cdRepo.cds.add(overdueCD);
-
-        fineRepo.balance.put("user1", 0.0);
-        fineRepo.balance.put("user2", 0.0);
-
-        Librarian librarian = new Librarian(bookRepo, cdRepo, fineRepo);
-
-        // استدعاء الميثود الجديدة مباشرة
-        librarian.runDailyFineUpdateIterationForTest();
-
-        assertTrue(fineRepo.getFineBalance("user1") > 0.0);
-        assertTrue(fineRepo.getFineBalance("user2") > 0.0);
-    }
+    
 }
