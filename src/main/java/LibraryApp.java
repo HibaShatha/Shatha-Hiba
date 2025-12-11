@@ -1,7 +1,3 @@
-
-
-
-
 import java.util.List;
 import java.util.Scanner;
 
@@ -23,7 +19,6 @@ import backend.strategy.SearchStrategy;
 import backend.strategy.TitleSearchStrategy;
 import backend.service.EmailService;
 import backend.service.ReminderService;
-
 
 /**
  * Main entry point for the Library Application.
@@ -239,7 +234,6 @@ public class LibraryApp {
                         System.out.print("Enter keyword: ");
                         String keyword = scanner.nextLine();
 
-                        // اختيار الاستراتيجية حسب اختيار المستخدم
                         SearchStrategy strategy = null;
                         switch (mode) {
                             case "title":
@@ -256,7 +250,6 @@ public class LibraryApp {
                                 break;
                         }
 
-                        // إنشاء الـ context وتنفيذ البحث
                         Search searchContext = new Search(strategy);
                         List<Book> results = mediaService.searchBooks(searchContext, keyword);
 
@@ -275,7 +268,6 @@ public class LibraryApp {
                         System.out.println("Invalid type!");
                     }
                     break;
-
 
                 case 4:
                     for (Book b : mediaService.getAllBooks()) System.out.println(formatMediaInfo(b));
@@ -339,7 +331,6 @@ public class LibraryApp {
                     System.out.print("Enter keyword: ");
                     String keyword = scanner.nextLine();
 
-                    // تهيئة الاستراتيجية بـ null
                     SearchStrategy strategy = null;
 
                     switch (mode) {
@@ -357,7 +348,6 @@ public class LibraryApp {
                             break;
                     }
 
-                    // تأكد من أنها مش null قبل الاستخدام
                     if (strategy != null) {
                         Search searchContext = new Search(strategy);
                         List<Book> results = mediaService.searchBooks(searchContext, keyword);
@@ -372,7 +362,6 @@ public class LibraryApp {
                     System.out.print("Enter keyword: ");
                     String keyword = scanner.nextLine();
 
-                    // البحث عن CDs كما هو
                     List<CD> cds = mediaService.searchCD(keyword);
                     if (cds.isEmpty()) System.out.println("No CDs found!");
                     else for (CD c : cds) System.out.println(formatMediaInfo(c));
@@ -439,5 +428,3 @@ public class LibraryApp {
                (m.isOverdue() ? ", Fine: $" + m.calculateFine() : "") : "No");
     }
 }
-
-
