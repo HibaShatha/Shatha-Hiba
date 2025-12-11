@@ -162,6 +162,15 @@ class BookRepositoryTest {
         // التست يتأكد أن العملية فشلت بشكل نظيف
         assertTrue(result);
     }
+    @Test
+    void testConstructorCreatesFileIfNotExists() {
+        File newFile = new File(tempDir, "new_books.csv");
+        assertFalse(newFile.exists());
+
+        BookRepository repo = new BookRepository(newFile.getAbsolutePath());
+
+        assertTrue(newFile.exists(), "Constructor should create file if it does not exist");
+    }
 
 
 }
