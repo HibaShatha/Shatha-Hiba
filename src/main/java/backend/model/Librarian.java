@@ -18,6 +18,7 @@ public class Librarian implements Runnable {
     private final BookRepository bookRepo;
     private final CDRepository cdRepo;
     private final FineRepository fineRepo;
+    private volatile boolean running = true; // flag لإنهاء loop
 
     public Librarian(BookRepository bookRepo, CDRepository cdRepo, FineRepository fineRepo) {
         this.bookRepo = bookRepo;
@@ -27,27 +28,26 @@ public class Librarian implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            // تحديث الغرامات لكل مستخدم
+        runDailyFineUpdate();
+    }
+
+    public void stop() {
+        running = false;
+    }
+
+    private void runDailyFineUpdate() {
+        while (running) {
             updateOverdueFines();
             try {
-            	 
-               Thread.sleep(24 * 60 * 60 * 1000); // 
-            	
+                Thread.sleep(24 * 60 * 60 * 1000); // يوم كامل
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                Thread.currentThread().interrupt();
             }
         }
     }
-    /**
-     * Updates overdue fines for all borrowed books and CDs.
-     * <p>
-     * For each overdue media, calculates the fine and adds it to the user's
-     * current fine balance.
-     * </p>
-     */
+
     public void updateOverdueFines() {
-        // كتب متأخرة
         for (Book book : bookRepo.getAllBooks()) {
             if (book.isOverdue()) {
                 double fine = book.calculateFine();
@@ -55,8 +55,6 @@ public class Librarian implements Runnable {
                 fineRepo.updateFineBalance(book.getBorrowerUsername(), currentBalance + fine);
             }
         }
-
-        // CDs متأخرة
         for (CD cd : cdRepo.getAllCDs()) {
             if (cd.isOverdue()) {
                 double fine = cd.calculateFine();
