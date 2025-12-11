@@ -86,6 +86,7 @@ class LibrarianTest {
         // Assertions دقيقة
         assertTrue(fineRepo.getFineBalance("user1") > 5.0); // overdueBook
         assertTrue(fineRepo.getFineBalance("user2") > 2.0); // overdueCD
+        
         assertEquals(0.0, fineRepo.getFineBalance("user3")); // onTimeBook
         assertEquals(1.0, fineRepo.getFineBalance("user4")); // onTimeCD
     }
