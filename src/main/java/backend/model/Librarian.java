@@ -18,7 +18,7 @@ public class Librarian implements Runnable {
     private final BookRepository bookRepo;
     private final CDRepository cdRepo;
     private final FineRepository fineRepo;
-    private volatile boolean running = true; // end condition
+    protected volatile boolean running = true; // end condition
 
     public Librarian(BookRepository bookRepo, CDRepository cdRepo, FineRepository fineRepo) {
         this.bookRepo = bookRepo;
